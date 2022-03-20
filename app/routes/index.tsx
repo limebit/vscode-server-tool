@@ -1,5 +1,5 @@
 import { CheckCircleIcon, CloseIcon, DownloadIcon } from "@chakra-ui/icons";
-import { Box, Flex, IconButton, Input, Tag } from "@chakra-ui/react";
+import { Box, Flex, Heading, IconButton, Input, Tag } from "@chakra-ui/react";
 import { Repository } from "@prisma/client";
 import * as React from "react";
 import { json, useLoaderData } from "remix";
@@ -16,10 +16,12 @@ export default function Index() {
   return (
     <Box display="grid" justifyContent="center">
       <Box width="1200px">
+        <Box marginTop="30px" display="grid" justifyContent="center">
+          <Heading>VS Code Server Tool</Heading>
+        </Box>
         <Flex
           marginTop="30px"
           borderRadius="10px"
-          justifyContent="space-around"
           paddingY="10px"
           boxShadow="rgba(100, 100, 111, 0.2) 0px 7px 29px 0px"
           paddingX="20px"
@@ -43,30 +45,33 @@ export default function Index() {
                 paddingX="20px"
                 borderBottom={i == repositories.length - 1 ? undefined : "1px"}
                 borderColor="gray.200"
-                justifyContent="space-around"
+                justifyContent="space-between"
                 alignItems="center"
                 key={i}
               >
-                <Flex width="90%" justifyContent="space-between">
+                <Box justifyContent="space-between">
                   {repository.repositoryName}
+                </Box>
+                <Flex alignItems="center">
                   <Tag
                     colorScheme={
                       repository.runState == "started" ? "green" : "red"
                     }
+                    size="md"
                   >
                     {repository.runState}
                   </Tag>
+                  <IconButton
+                    marginLeft="20px"
+                    aria-label="Start Container"
+                    icon={<CheckCircleIcon />}
+                  />
+                  <IconButton
+                    marginLeft="20px"
+                    aria-label="Stop Container"
+                    icon={<CloseIcon />}
+                  />
                 </Flex>
-                <IconButton
-                  marginLeft="20px"
-                  aria-label="Start Container"
-                  icon={<CheckCircleIcon />}
-                />
-                <IconButton
-                  marginLeft="20px"
-                  aria-label="Stop Container"
-                  icon={<CloseIcon />}
-                />
               </Flex>
             ))}
           </Box>
