@@ -21,6 +21,7 @@ datasource db {
 model Repository {
   repositoryName          String       @id
   runState                RunState     @default(stopped)
+  containerId             String?
 }
 
 enum RunState {

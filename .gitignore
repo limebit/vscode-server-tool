@@ -9,3 +9,5 @@ node_modules
 build-storybook.log
 
 cdk.out
+
+git-repos
