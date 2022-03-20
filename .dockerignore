@@ -1,0 +1,13 @@
+.cache
+.github
+.husky
+.storybook
+.vscode
+
+build
+docs
+infrastructure
+node_modules
+cdk.out
+/public/build
+/app/styles
