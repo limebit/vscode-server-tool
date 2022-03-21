@@ -11,3 +11,4 @@ node_modules
 cdk.out
 /public/build
 /app/styles
+data

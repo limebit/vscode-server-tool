@@ -10,5 +10,6 @@ build-storybook.log
 
 cdk.out
 
-git-repos
+git-repos/*
+!git-repos/.gitkeep
 data

@@ -42,7 +42,7 @@ export const action: ActionFunction = async ({ request }) => {
         return repository.containerId
           ? redirect(
               process.env.NODE_ENV == "production"
-                ? `http://${process.env.HOST}:80085/${repository.id}/`
+                ? `http://${process.env.HOST}/${repository.id}/`
                 : `http://localhost:3030/${repository.id}/`
             )
           : null;
@@ -63,7 +63,7 @@ export const action: ActionFunction = async ({ request }) => {
                 : ``
             }PathPrefix(\`/${repository.id}\`)`,
           ],
-          [`traefik.http.routers.${repository.id}.priority`, `100000`],
+          [`traefik.http.routers.${repository.id}.priority`, `2`],
           [`traefik.http.routers.${repository.id}.entrypoints`, "web"],
           [
             `traefik.http.middlewares.${repository.id}-stripprefix.stripprefix.prefixes`,
@@ -84,13 +84,10 @@ export const action: ActionFunction = async ({ request }) => {
         HostConfig: {
           AutoRemove: true,
           Binds: [
-            `${gitFolder}/${userId}/${repositoryName}:/root/${repositoryName}`,
+            `${
+              process.env.GIT_FOLDER_MOUNT ?? gitFolder
+            }/${userId}/${repositoryName}:/root/${repositoryName}`,
           ],
-          // Devices: [
-          //   "/dev/nvidia0:/dev/nvidia0",
-          //   "/dev/nvidiactl:/dev/nvidiactl",
-          //   "/dev/nvidia-uvm:/dev/nvidia-uvm",
-          // ],
         },
         Env: [`GIT_NAME=${user?.username}`, `REPOSITORY=${repositoryName}`],
       });
@@ -109,7 +106,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       return redirect(
         process.env.NODE_ENV == "production"
-          ? `http://${process.env.HOST}:80085/${repository.id}/`
+          ? `http://${process.env.HOST}/${repository.id}/`
           : `http://localhost:3030/${repository.id}/`
       );
     }
@@ -121,8 +118,13 @@ export const action: ActionFunction = async ({ request }) => {
         break;
       }
 
-      const container = docker.getContainer(repository.containerId as string);
-      await container.stop();
+      const containers = (await docker.listContainers()).filter(
+        (container) => container.Id == (repository.containerId as string)
+      );
+
+      if (containers.length > 0) {
+        containers.map((container) => docker.getContainer(container.Id).stop());
+      }
 
       await db.repository.update({
         where: { id: repository.id },
@@ -166,12 +168,12 @@ export const action: ActionFunction = async ({ request }) => {
         where: { userId, repositoryName },
       });
 
-      const container = docker.getContainer(repository?.containerId as string);
+      const containers = (await docker.listContainers()).filter(
+        (container) => container.Id == (repository?.containerId as string)
+      );
 
-      // the container.id is null if the container doesnt exist
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (container.id != null) {
-        await container.stop();
+      if (containers.length > 0) {
+        containers.map((container) => docker.getContainer(container.Id).stop());
       }
 
       await db.repository.delete({ where: { id: repository?.id } });

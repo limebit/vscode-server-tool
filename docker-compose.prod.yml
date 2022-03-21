@@ -1,9 +1,17 @@
 version: "3"
 services:
-  postgres:
+  database:
+    container_name: vscode-database
     image: postgres:latest
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - traefik_default
     volumes:
       - ./data:/var/lib/postgresql/data
     environment:
@@ -11,11 +19,32 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: vscode-server-tool
     tty: true
+  frontend:
+    build: .
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - traefik_default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./git-repos:/app/git-repos
+    environment:
+      - HOST=localhost
+      - GIT_FOLDER=git-repos
+      - PORT=80
+      - DATABASE_URL=postgres://postgres:postgres@vscode-database:5432/vscode-server-tool
+      # Find better solution for next path. It's this folder that gets mounted because the docker.sock is only passed to the container and docker is not really running inside.
+      - GIT_FOLDER_MOUNT=C:/Users/jakob/Documents/Arbeit/vscode-server-tool/git-repos
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=1"
   traefik:
     image: traefik:v2.6
     ports:
       - "80:80"
-      - "80085:80085"
     networks:
       - traefik_default
     volumes:
@@ -25,17 +54,6 @@ services:
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=traefik_default
       - --entrypoints.web.address=:80
-      - --entrypoints.servers.address=:80085
-  frontend:
-    build: .
-    networks:
-      - traefik_default
-    environment:
-      - HOST=localhost
-      - GIT_FOLDER=git-repos
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.entrypoints=web"
 
 networks:
   traefik_default:
