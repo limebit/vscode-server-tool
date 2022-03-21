@@ -12,22 +12,28 @@ services:
   traefik:
     image: traefik:v2.6
     ports:
-      - "3030:3030"
-      - "8080:8080"
+      - "80:80"
+      - "80085:80085"
     networks:
       - traefik_default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command:
-      - --api.debug=true
-      - --log.level=DEBUG
-      - --api.insecure=true
-      - --api.dashboard=true
-
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=traefik_default
-      - --entrypoints.servers.address=:3030
+      - --entrypoints.web.address=:80
+      - --entrypoints.servers.address=:80085
+  frontend:
+    build: .
+    networks:
+      - traefik_default
+    environment:
+      - HOST=localhost
+      - GIT_FOLDER=git-repos
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.entrypoints=web"
 
 networks:
   traefik_default:

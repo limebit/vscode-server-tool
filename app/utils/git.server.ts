@@ -16,13 +16,6 @@ const cloneRepository = async (repository: string, user: User) => {
     baseDir: userPath,
   });
 
-  console.log(
-    repository.replace(
-      "github.com",
-      `${user.username}:${user.githubToken}@github.com`
-    )
-  );
-
   await git.clone(
     repository.replace(
       "github.com",

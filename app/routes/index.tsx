@@ -7,7 +7,13 @@ import {
 import { Box, Flex, Heading, IconButton, Input, Tag } from "@chakra-ui/react";
 import { Repository } from "@prisma/client";
 import * as React from "react";
-import { ActionFunction, json, LoaderFunction, useLoaderData } from "remix";
+import {
+  ActionFunction,
+  json,
+  LoaderFunction,
+  redirect,
+  useLoaderData,
+} from "remix";
 import { docker } from "~/utils/docker.server";
 import {
   deleteRepository,
@@ -16,7 +22,6 @@ import {
 } from "~/utils/git.server";
 import { db } from "~/utils/prisma.server";
 import { getUser, requireUserId } from "~/utils/session.server";
-import { v4 as uuidv4 } from "uuid";
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
@@ -30,36 +35,50 @@ export const action: ActionFunction = async ({ request }) => {
       const repository = await db.repository.findFirst({
         where: { userId, repositoryName },
       });
-      if (repository?.runState == "started") {
+      if (!repository) {
         break;
       }
+      if (repository.runState == "started") {
+        return repository.containerId
+          ? redirect(
+              process.env.NODE_ENV == "production"
+                ? `http://${process.env.HOST}:80085/${repository.id}/`
+                : `http://localhost:3030/${repository.id}/`
+            )
+          : null;
+      }
 
-      const id = uuidv4();
-
-      console.log(id);
+      const user = await getUser(request);
 
       const container = await docker.createContainer({
         Image: "vscode-server-tool",
         ExposedPorts: { "8080/tcp": {} },
         Labels: Object.fromEntries([
           ["traefik.enable", "true"],
-          [`traefik.http.routers.${id}.rule`, `PathPrefix(\`/${id}\`)`],
-          [`traefik.http.routers.${id}.entrypoints`, "web"],
           [
-            `traefik.http.middlewares.${id}-stripprefix.stripprefix.prefixes`,
-            `/${id}`,
+            `traefik.http.routers.${repository.id}.rule`,
+            `${
+              process.env.NODE_ENV == "production"
+                ? `Host(\`${process.env.HOST}\`) && `
+                : ``
+            }PathPrefix(\`/${repository.id}\`)`,
+          ],
+          [`traefik.http.routers.${repository.id}.entrypoints`, "servers"],
+          [
+            `traefik.http.middlewares.${repository.id}-stripprefix.stripprefix.prefixes`,
+            `/${repository.id}`,
           ],
           [
-            `traefik.http.middlewares.${id}-redirect.redirectregex.regex`,
-            `^http://localhost/${id}`,
+            `traefik.http.middlewares.${repository.id}-redirect.redirectregex.regex`,
+            `^http://localhost/${repository.id}`,
           ],
           [
-            `traefik.http.middlewares.${id}-redirect.redirectregex.replacement`,
-            `http://localhost/${id}/`,
+            `traefik.http.middlewares.${repository.id}-redirect.redirectregex.replacement`,
+            `http://localhost/${repository.id}/`,
           ],
           [
-            `traefik.http.routers.${id}.middlewares`,
-            `${id}-stripprefix@docker,${id}-redirect@docker`,
+            `traefik.http.routers.${repository.id}.middlewares`,
+            `${repository.id}-stripprefix@docker,${repository.id}-redirect@docker`,
           ],
           [`traefik.docker.network`, "vscode-server-tool_traefik_default"],
         ]),
@@ -67,6 +86,7 @@ export const action: ActionFunction = async ({ request }) => {
           AutoRemove: true,
           Binds: [`${gitFolder}/${userId}/${repositoryName}:/root/repository`],
         },
+        Env: [`GIT_NAME=${user?.username}`],
       });
 
       const network = docker.getNetwork("vscode-server-tool_traefik_default");
@@ -74,11 +94,18 @@ export const action: ActionFunction = async ({ request }) => {
       await container.start();
 
       await db.repository.update({
-        where: { id: repository?.id },
+        where: { id: repository.id },
         data: { runState: "started", containerId: container.id },
       });
 
-      return null;
+      // wait for 1 second to let docker container start
+      await new Promise((res) => setTimeout(res, 1000));
+
+      return redirect(
+        process.env.NODE_ENV == "production"
+          ? `http://${process.env.HOST}:80085/${repository.id}/`
+          : `http://localhost:3030/${repository.id}/`
+      );
     }
     case "stop": {
       const repository = await db.repository.findFirst({

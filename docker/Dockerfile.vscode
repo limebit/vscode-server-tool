@@ -1,11 +1,15 @@
 FROM nvidia/cuda:11.6.0-base-ubuntu20.04
 
 RUN apt update
-RUN apt install curl -y
+RUN apt install curl git -y
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 COPY ./config.yaml /root/.config/code-server/config.yaml
 
+ADD start.sh /
+
+RUN chmod +x /start.sh
+
 EXPOSE 8080
 
-CMD [ "code-server", "/root/repository"]
+CMD ["/start.sh"]
