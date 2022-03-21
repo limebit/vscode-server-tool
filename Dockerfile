@@ -56,10 +56,10 @@ RUN true
 COPY --from=build /app/public /app/public
 ADD . .
 
-ADD start_with_seed.sh /
+ADD start.sh /
 
-RUN chmod +x /start_with_seed.sh
+RUN chmod +x /start.sh
 
 EXPOSE 80
 
-CMD ["/start_with_seed.sh"]
+CMD ["/start.sh"]

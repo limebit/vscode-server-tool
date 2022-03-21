@@ -2,8 +2,12 @@ import shell from "shelljs";
 
 shell.cd(__dirname);
 
-const clone = (repositoryName: string) => {
+const cloneRepository = (repositoryName: string) => {
   shell.exec(`git clone ${repositoryName}`);
 };
 
-export { clone };
+const deleteRepository = (repositoryName: string) => {
+  shell.rm("rf", repositoryName);
+};
+
+export { cloneRepository, deleteRepository };

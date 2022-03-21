@@ -7,9 +7,9 @@ import {
 import { Box, Flex, Heading, IconButton, Input, Tag } from "@chakra-ui/react";
 import { Repository } from "@prisma/client";
 import * as React from "react";
-import { ActionFunction, json, redirect, useLoaderData } from "remix";
+import { ActionFunction, json, useLoaderData } from "remix";
 import { docker } from "~/utils/docker.server";
-import { clone } from "~/utils/git.server";
+import { deleteRepository, cloneRepository } from "~/utils/git.server";
 import { db } from "~/utils/prisma.server";
 
 export const action: ActionFunction = async ({ request }) => {
@@ -75,7 +75,7 @@ export const action: ActionFunction = async ({ request }) => {
         data: { runState: "started", containerId: container.id },
       });
 
-      return redirect(`/test`);
+      return null;
     }
     case "stop": {
       const repository = await db.repository.findFirst({
@@ -111,7 +111,7 @@ export const action: ActionFunction = async ({ request }) => {
         break;
       }
 
-      clone(repositoryName);
+      cloneRepository(repositoryName);
 
       await db.repository.create({
         data: { repositoryName: repositoryNameCleaned },
@@ -134,11 +134,15 @@ export const action: ActionFunction = async ({ request }) => {
 
       await db.repository.delete({ where: { repositoryName } });
 
+      deleteRepository(repositoryName);
+
       break;
     }
     default:
       return null;
   }
+
+  return null;
 };
 
 export const loader = async () => {
