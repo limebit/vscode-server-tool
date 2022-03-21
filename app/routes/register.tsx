@@ -45,7 +45,12 @@ export default function Register() {
               placeholder="Password"
               name="password"
             />
-            <Input marginTop="10px" placeholder="GitHub Token" name="token" />
+            <Input
+              type="password"
+              marginTop="10px"
+              placeholder="GitHub Token"
+              name="token"
+            />
             <Button marginTop="10px" type="submit">
               Register
             </Button>
