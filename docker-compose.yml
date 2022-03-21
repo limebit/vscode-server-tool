@@ -27,7 +27,7 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=traefik_default
-      - --entrypoints.servers.address=:3030
+      - --entrypoints.web.address=:3030
 
 networks:
   traefik_default:

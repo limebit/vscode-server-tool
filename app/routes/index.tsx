@@ -63,24 +63,23 @@ export const action: ActionFunction = async ({ request }) => {
                 : ``
             }PathPrefix(\`/${repository.id}\`)`,
           ],
-          [`traefik.http.routers.${repository.id}.entrypoints`, "servers"],
+          [`traefik.http.routers.${repository.id}.priority`, `100000`],
+          [`traefik.http.routers.${repository.id}.entrypoints`, "web"],
           [
             `traefik.http.middlewares.${repository.id}-stripprefix.stripprefix.prefixes`,
             `/${repository.id}`,
           ],
           [
-            `traefik.http.middlewares.${repository.id}-redirect.redirectregex.regex`,
-            `^http://localhost/${repository.id}`,
-          ],
-          [
-            `traefik.http.middlewares.${repository.id}-redirect.redirectregex.replacement`,
-            `http://localhost/${repository.id}/`,
+            `traefik.http.middlewares.${repository.id}-auth.forwardauth.address`,
+            process.env.NODE_ENV == "production"
+              ? `http://${process.env.HOST}/auth`
+              : "http://host.docker.internal:3000/auth",
           ],
           [
             `traefik.http.routers.${repository.id}.middlewares`,
-            `${repository.id}-stripprefix@docker,${repository.id}-redirect@docker`,
+            `${repository.id}-stripprefix@docker,${repository.id}-auth@docker`,
           ],
-          [`traefik.docker.network`, "vscode-server-tool_traefik_default"],
+          ["traefik.docker.network", "vscode-server-tool_traefik_default"],
         ]),
         HostConfig: {
           AutoRemove: true,
