@@ -84,9 +84,16 @@ export const action: ActionFunction = async ({ request }) => {
         ]),
         HostConfig: {
           AutoRemove: true,
-          Binds: [`${gitFolder}/${userId}/${repositoryName}:/root/repository`],
+          Binds: [
+            `${gitFolder}/${userId}/${repositoryName}:/root/${repositoryName}`,
+          ],
+          // Devices: [
+          //   "/dev/nvidia0:/dev/nvidia0",
+          //   "/dev/nvidiactl:/dev/nvidiactl",
+          //   "/dev/nvidia-uvm:/dev/nvidia-uvm",
+          // ],
         },
-        Env: [`GIT_NAME=${user?.username}`],
+        Env: [`GIT_NAME=${user?.username}`, `REPOSITORY=${repositoryName}`],
       });
 
       const network = docker.getNetwork("vscode-server-tool_traefik_default");
