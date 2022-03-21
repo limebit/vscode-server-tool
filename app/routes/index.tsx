@@ -7,62 +7,65 @@ import {
 import { Box, Flex, Heading, IconButton, Input, Tag } from "@chakra-ui/react";
 import { Repository } from "@prisma/client";
 import * as React from "react";
-import { ActionFunction, json, useLoaderData } from "remix";
+import { ActionFunction, json, LoaderFunction, useLoaderData } from "remix";
 import { docker } from "~/utils/docker.server";
-import { deleteRepository, cloneRepository } from "~/utils/git.server";
+import {
+  deleteRepository,
+  cloneRepository,
+  gitFolder,
+} from "~/utils/git.server";
 import { db } from "~/utils/prisma.server";
+import { getUser, requireUserId } from "~/utils/session.server";
+import { v4 as uuidv4 } from "uuid";
 
 export const action: ActionFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
+
   const formData = await request.formData();
 
   const repositoryName = formData.get("repositoryName") as string;
 
   switch (formData.get("action")) {
     case "start": {
-      const state = (
-        await db.repository.findFirst({
-          where: { repositoryName },
-        })
-      )?.runState;
-      if (state == "started") {
+      const repository = await db.repository.findFirst({
+        where: { userId, repositoryName },
+      });
+      if (repository?.runState == "started") {
         break;
       }
 
-      const repositoryNameEncoded = btoa(repositoryName);
+      const id = uuidv4();
 
-      console.log(repositoryNameEncoded);
+      console.log(id);
 
       const container = await docker.createContainer({
         Image: "vscode-server-tool",
         ExposedPorts: { "8080/tcp": {} },
         Labels: Object.fromEntries([
           ["traefik.enable", "true"],
+          [`traefik.http.routers.${id}.rule`, `PathPrefix(\`/${id}\`)`],
+          [`traefik.http.routers.${id}.entrypoints`, "web"],
           [
-            `traefik.http.routers.${repositoryNameEncoded}.rule`,
-            `PathPrefix(\`/${repositoryNameEncoded}\`)`,
-          ],
-          [`traefik.http.routers.${repositoryNameEncoded}.entrypoints`, "web"],
-          [
-            `traefik.http.middlewares.${repositoryNameEncoded}-stripprefix.stripprefix.prefixes`,
-            `/${repositoryNameEncoded}`,
+            `traefik.http.middlewares.${id}-stripprefix.stripprefix.prefixes`,
+            `/${id}`,
           ],
           [
-            `traefik.http.middlewares.${repositoryNameEncoded}-redirect.redirectregex.regex`,
-            `^http://localhost/${repositoryNameEncoded}`,
+            `traefik.http.middlewares.${id}-redirect.redirectregex.regex`,
+            `^http://localhost/${id}`,
           ],
           [
-            `traefik.http.middlewares.${repositoryNameEncoded}-redirect.redirectregex.replacement`,
-            `http://localhost/${repositoryNameEncoded}/`,
+            `traefik.http.middlewares.${id}-redirect.redirectregex.replacement`,
+            `http://localhost/${id}/`,
           ],
           [
-            `traefik.http.routers.${repositoryNameEncoded}.middlewares`,
-            `${repositoryNameEncoded}-stripprefix@docker,${repositoryNameEncoded}-redirect@docker`,
+            `traefik.http.routers.${id}.middlewares`,
+            `${id}-stripprefix@docker,${id}-redirect@docker`,
           ],
           [`traefik.docker.network`, "vscode-server-tool_traefik_default"],
         ]),
         HostConfig: {
           AutoRemove: true,
-          Binds: [`${__dirname}/${repositoryName}:/root/repository`],
+          Binds: [`${gitFolder}/${userId}/${repositoryName}:/root/repository`],
         },
       });
 
@@ -71,7 +74,7 @@ export const action: ActionFunction = async ({ request }) => {
       await container.start();
 
       await db.repository.update({
-        where: { repositoryName },
+        where: { id: repository?.id },
         data: { runState: "started", containerId: container.id },
       });
 
@@ -79,7 +82,7 @@ export const action: ActionFunction = async ({ request }) => {
     }
     case "stop": {
       const repository = await db.repository.findFirst({
-        where: { repositoryName },
+        where: { userId, repositoryName },
       });
       if (!repository || repository.runState == "stopped") {
         break;
@@ -89,14 +92,14 @@ export const action: ActionFunction = async ({ request }) => {
       await container.stop();
 
       await db.repository.update({
-        where: { repositoryName },
+        where: { id: repository.id },
         data: { runState: "stopped", containerId: null },
       });
       break;
     }
     case "create": {
       const repositoryMatch = (formData.get("repositoryName") as string).match(
-        /(?<=\/).*(?=\.git$)/
+        /(?<=\/)[^/]*(?=\.git$)/
       );
       if (!repositoryMatch) {
         break;
@@ -104,24 +107,30 @@ export const action: ActionFunction = async ({ request }) => {
       const repositoryNameCleaned = repositoryMatch[0];
 
       const repository = await db.repository.findFirst({
-        where: { repositoryName: repositoryNameCleaned },
+        where: { userId, repositoryName: repositoryNameCleaned },
       });
 
       if (repository != null) {
         break;
       }
 
-      cloneRepository(repositoryName);
+      const user = await getUser(request);
+
+      if (!user) {
+        break;
+      }
+
+      await cloneRepository(repositoryName, user);
 
       await db.repository.create({
-        data: { repositoryName: repositoryNameCleaned },
+        data: { repositoryName: repositoryNameCleaned, userId },
       });
 
       break;
     }
     case "delete": {
       const repository = await db.repository.findFirst({
-        where: { repositoryName },
+        where: { userId, repositoryName },
       });
 
       const container = docker.getContainer(repository?.containerId as string);
@@ -132,21 +141,22 @@ export const action: ActionFunction = async ({ request }) => {
         await container.stop();
       }
 
-      await db.repository.delete({ where: { repositoryName } });
+      await db.repository.delete({ where: { id: repository?.id } });
 
-      deleteRepository(repositoryName);
+      await deleteRepository(repositoryName, userId);
 
       break;
     }
     default:
       return null;
   }
-
   return null;
 };
 
-export const loader = async () => {
-  return json(await db.repository.findMany());
+export const loader: LoaderFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
+
+  return json(await db.repository.findMany({ where: { userId } }));
 };
 
 export default function Index() {
@@ -164,17 +174,17 @@ export default function Index() {
             borderRadius="10px"
             paddingY="10px"
             boxShadow="rgba(100, 100, 111, 0.2) 0px 7px 29px 0px"
-            paddingX="20px"
+            paddingX="10px"
           >
             <Input
-              placeholder="git@github.com:limebit/vscode-server-tool.git"
+              placeholder="https://github.com/limebit/vscode-server-tool.git"
               name="repositoryName"
             />
             <IconButton
               type="submit"
               name="action"
               value="create"
-              marginLeft="20px"
+              marginLeft="10px"
               aria-label="load git repo"
               icon={<DownloadIcon />}
             />
@@ -190,7 +200,7 @@ export default function Index() {
               <form key={i} method="post" action="/?index">
                 <Flex
                   paddingY="10px"
-                  paddingX="20px"
+                  paddingX="10px"
                   borderBottom={
                     i == repositories.length - 1 ? undefined : "1px"
                   }
@@ -198,9 +208,7 @@ export default function Index() {
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <Box justifyContent="space-between">
-                    {repository.repositoryName}
-                  </Box>
+                  <Box marginLeft="10px">{repository.repositoryName}</Box>
                   <Flex alignItems="center">
                     <Tag
                       colorScheme={
@@ -216,7 +224,7 @@ export default function Index() {
                       value={repository.repositoryName}
                     />
                     <IconButton
-                      marginLeft="20px"
+                      marginLeft="10px"
                       aria-label="Start Container"
                       icon={<CheckCircleIcon />}
                       type="submit"
@@ -224,7 +232,7 @@ export default function Index() {
                       value="start"
                     />
                     <IconButton
-                      marginLeft="20px"
+                      marginLeft="10px"
                       aria-label="Stop Container"
                       icon={<CloseIcon />}
                       type="submit"
@@ -232,7 +240,7 @@ export default function Index() {
                       value="stop"
                     />
                     <IconButton
-                      marginLeft="20px"
+                      marginLeft="10px"
                       aria-label="Delete Container"
                       icon={<DeleteIcon />}
                       type="submit"

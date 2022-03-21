@@ -1,13 +1,41 @@
-import shell from "shelljs";
+import simpleGit from "simple-git";
+import { rm, mkdir } from "fs/promises";
+import path from "path";
+import { User } from "@prisma/client";
 
-shell.cd(__dirname);
+const gitFolder = path.resolve(
+  process.cwd(),
+  process.env.GIT_FOLDER ?? "git-repos"
+);
 
-const cloneRepository = (repositoryName: string) => {
-  shell.exec(`git clone ${repositoryName}`);
+const cloneRepository = async (repository: string, user: User) => {
+  const userPath = path.resolve(gitFolder, user.id);
+  await mkdir(userPath, { recursive: true });
+
+  const git = simpleGit({
+    baseDir: userPath,
+  });
+
+  console.log(
+    repository.replace(
+      "github.com",
+      `${user.username}:${user.githubToken}@github.com`
+    )
+  );
+
+  await git.clone(
+    repository.replace(
+      "github.com",
+      `${user.username}:${user.githubToken}@github.com`
+    )
+  );
 };
 
-const deleteRepository = (repositoryName: string) => {
-  shell.rm("rf", repositoryName);
+const deleteRepository = async (repository: string, userId: string) => {
+  await rm(path.resolve(gitFolder, userId, repository), {
+    recursive: true,
+    force: true,
+  });
 };
 
-export { cloneRepository, deleteRepository };
+export { gitFolder, cloneRepository, deleteRepository };
