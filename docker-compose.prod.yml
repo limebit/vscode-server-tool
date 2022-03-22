@@ -34,8 +34,8 @@ services:
       - GIT_FOLDER=git-repos
       - PORT=80
       - DATABASE_URL=postgres://postgres:postgres@vscode-database:5432/vscode-server-tool
-      # Find better solution for next path. It's this folder that gets mounted because the docker.sock is only passed to the container and docker is not really running inside.
-      - GIT_FOLDER_MOUNT=C:/Users/jakob/Documents/Arbeit/vscode-server-tool/git-repos
+      - SESSION_SECRET=my-secret
+      - GIT_FOLDER_MOUNT=${PWD}/git-repos
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`localhost`)"

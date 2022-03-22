@@ -3,6 +3,7 @@
 .husky
 .storybook
 .vscode
+.env
 
 build
 docs
