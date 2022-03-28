@@ -40,7 +40,8 @@ const { getSession, commitSession, destroySession } =
   createCookieSessionStorage({
     cookie: {
       name: "RJ_session",
-      secure: true,
+      // Replace with true if run with https
+      secure: false,
       secrets: [sessionSecret],
       sameSite: "lax",
       path: "/",

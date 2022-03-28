@@ -30,15 +30,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./git-repos:/app/git-repos
     environment:
-      - HOST=localhost
+      - HOST=${HOST:-localhost}
       - GIT_FOLDER=git-repos
       - PORT=80
       - DATABASE_URL=postgres://postgres:postgres@vscode-database:5432/vscode-server-tool
-      - SESSION_SECRET=my-secret
+      - SESSION_SECRET=${SESSION_SECRET:-my-secret}
       - GIT_FOLDER_MOUNT=${PWD}/git-repos
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`localhost`)"
+      - "traefik.http.routers.frontend.rule=Host(`${HOST:-localhost}`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.routers.frontend.priority=1"
   traefik:
