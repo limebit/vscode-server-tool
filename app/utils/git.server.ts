@@ -3,10 +3,7 @@ import { rm, mkdir } from "fs/promises";
 import path from "path";
 import { User } from "@prisma/client";
 
-const gitFolder = path.resolve(
-  process.cwd(),
-  process.env.GIT_FOLDER ?? "git-repos"
-);
+const gitFolder = path.resolve(process.cwd(), "git-repos");
 
 const cloneRepository = async (repository: string, user: User) => {
   const userPath = path.resolve(gitFolder, user.id);

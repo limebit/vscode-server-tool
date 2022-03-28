@@ -123,7 +123,11 @@ export const action: ActionFunction = async ({ request }) => {
       );
 
       if (containers.length > 0) {
-        containers.map((container) => docker.getContainer(container.Id).stop());
+        await Promise.all(
+          containers.map((container) =>
+            docker.getContainer(container.Id).stop()
+          )
+        );
       }
 
       await db.repository.update({
