@@ -2,22 +2,29 @@ FROM nvidia/cuda:11.6.0-base-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update
-RUN apt install locales -y
-RUN locale-gen en_US.UTF-8
-RUN apt install curl git powerline fonts-powerline zsh r-base -y
-RUN curl -fsSL https://code-server.dev/install.sh | sh
-RUN git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
-RUN cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
-RUN chsh -s /bin/zsh
-RUN apt install python3-pip make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl -y
-RUN pip install virtualenvwrapper
-RUN curl https://pyenv.run | bash
-RUN echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.zshrc
-RUN echo 'export PATH="$HOME/.pyenv/shims:$PATH"' >> ~/.zshrc
-RUN echo 'eval "$(pyenv init -)"' >> ~/.zshrc
-RUN echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.zshrc
-RUN exec zsh
+RUN \
+  apt update && \
+  apt install locales -y && \
+  locale-gen en_US.UTF-8 && \
+  apt install curl git powerline fonts-powerline zsh -y && \
+  curl -fsSL https://code-server.dev/install.sh | sh && \
+  git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh && \
+  cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc && \
+  chsh -s /bin/zsh && \
+  apt install python3-pip make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl -y && \
+  pip install virtualenvwrapper && \
+  curl https://pyenv.run | bash && \
+  echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.zshrc && \
+  echo 'export PATH="$HOME/.pyenv/shims:$PATH"' >> ~/.zshrc && \
+  echo 'eval "$(pyenv init -)"' >> ~/.zshrc && \
+  echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.zshrc && \
+  exec zsh
+RUN apt install dirmngr gnupg apt-transport-https ca-certificates software-properties-common -y && \
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
+  add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/' && \
+  apt update && \
+  apt install r-base -y
+
 
 COPY ./config.yaml /root/.config/code-server/config.yaml
 
