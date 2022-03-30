@@ -1,18 +1,22 @@
-import {
-  CheckCircleIcon,
-  CloseIcon,
-  DeleteIcon,
-  DownloadIcon,
-} from "@chakra-ui/icons";
-import { Box, Flex, Heading, IconButton, Input, Tag } from "@chakra-ui/react";
-import { Repository } from "@prisma/client";
 import * as React from "react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Icon,
+  IconButton,
+  Input,
+  Link,
+} from "@chakra-ui/react";
+import { Repository } from "@prisma/client";
 import {
   ActionFunction,
   json,
   LoaderFunction,
   redirect,
   useLoaderData,
+  Link as RemixLink,
+  Form,
 } from "remix";
 import { docker } from "~/utils/docker.server";
 import {
@@ -22,6 +26,8 @@ import {
 } from "~/utils/git.server";
 import { db } from "~/utils/prisma.server";
 import { getUser, requireUserId } from "~/utils/session.server";
+import { RepositoryTable } from "~/components/repositoryTable";
+import { FaPlus } from "react-icons/fa";
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
@@ -203,11 +209,22 @@ export default function Index() {
 
   return (
     <Box display="grid" justifyContent="center">
+      <Link
+        position="absolute"
+        top="20px"
+        right="30px"
+        as={RemixLink}
+        to="/logout"
+        color="gray.500"
+        marginLeft="10px"
+      >
+        Logout
+      </Link>
       <Box width="1200px">
         <Box marginTop="30px" display="grid" justifyContent="center">
           <Heading>VS Code Server Tool</Heading>
         </Box>
-        <form method="post" action="/?index">
+        <Form method="post">
           <Flex
             marginTop="30px"
             borderRadius="10px"
@@ -225,73 +242,11 @@ export default function Index() {
               value="create"
               marginLeft="10px"
               aria-label="load git repo"
-              icon={<DownloadIcon />}
+              icon={<Icon as={FaPlus} />}
             />
           </Flex>
-        </form>
-        {repositories.length > 0 ? (
-          <Box
-            marginTop="30px"
-            borderRadius="10px"
-            boxShadow="rgba(100, 100, 111, 0.2) 0px 7px 29px 0px"
-          >
-            {repositories.map((repository, i) => (
-              <form key={i} method="post" action="/?index">
-                <Flex
-                  paddingY="10px"
-                  paddingX="10px"
-                  borderBottom={
-                    i == repositories.length - 1 ? undefined : "1px"
-                  }
-                  borderColor="gray.200"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Box marginLeft="10px">{repository.repositoryName}</Box>
-                  <Flex alignItems="center">
-                    <Tag
-                      colorScheme={
-                        repository.runState == "started" ? "green" : "red"
-                      }
-                      size="md"
-                    >
-                      {repository.runState}
-                    </Tag>
-                    <Input
-                      type="hidden"
-                      name="repositoryName"
-                      value={repository.repositoryName}
-                    />
-                    <IconButton
-                      marginLeft="10px"
-                      aria-label="Start Container"
-                      icon={<CheckCircleIcon />}
-                      type="submit"
-                      name="action"
-                      value="start"
-                    />
-                    <IconButton
-                      marginLeft="10px"
-                      aria-label="Stop Container"
-                      icon={<CloseIcon />}
-                      type="submit"
-                      name="action"
-                      value="stop"
-                    />
-                    <IconButton
-                      marginLeft="10px"
-                      aria-label="Delete Container"
-                      icon={<DeleteIcon />}
-                      type="submit"
-                      name="action"
-                      value="delete"
-                    />
-                  </Flex>
-                </Flex>
-              </form>
-            ))}
-          </Box>
-        ) : undefined}
+        </Form>
+        <RepositoryTable repositories={repositories} />
       </Box>
     </Box>
   );
