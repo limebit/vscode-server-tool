@@ -1,39 +1,30 @@
 import * as React from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  Icon,
-  IconButton,
-  Input,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Box, Flex, Icon, IconButton, Input } from "@chakra-ui/react";
 import { FaPlay, FaStop, FaSlidersH } from "react-icons/fa";
 import { useState } from "react";
-import { LogTerminal } from "./logTerminal";
+import { RepositorySettings } from "./repositorySettings";
+import { Repository } from "@prisma/client";
 
 interface RepositoryCardProps {
-  repository: {
-    repositoryName: string;
-    runState: "started" | "stopped";
-    containerId: string | null;
-  };
+  repository: Repository;
   last?: boolean;
 }
 
 export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
   const [open, setOpen] = useState(false);
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <form method="post" action="/?index">
       <Box
-        paddingY="10px"
-        paddingX="10px"
-        borderBottom={last ? undefined : "1px"}
+        borderBottom={last || open ? undefined : "1px"}
         borderColor="gray.200"
       >
-        <Flex justifyContent="space-between" alignItems="center">
+        <Flex
+          justifyContent="space-between"
+          alignItems="center"
+          paddingY="10px"
+          paddingX="10px"
+        >
           <Box marginLeft="10px" fontWeight="bold">
             {repository.repositoryName}
           </Box>
@@ -88,22 +79,7 @@ export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
             />
           </Flex>
         </Flex>
-        <Box
-          display={open ? "block" : "none"}
-          marginLeft="10px"
-          marginRight="10px"
-        >
-          <Button onClick={onOpen} disabled={repository.runState != "started"}>
-            Open Logs
-          </Button>
-          {repository.runState == "started" && repository.containerId ? (
-            <LogTerminal
-              isOpen={isOpen}
-              onClose={onClose}
-              containerId={repository.containerId}
-            />
-          ) : null}
-        </Box>
+        <RepositorySettings repository={repository} open={open} last={last} />
       </Box>
     </form>
   );

@@ -107,14 +107,7 @@ export const action: ActionFunction = async ({ request }) => {
         data: { runState: "started", containerId: container.id },
       });
 
-      // wait for 1 second to let docker container start
-      await new Promise((res) => setTimeout(res, 1000));
-
-      return redirect(
-        process.env.NODE_ENV == "production"
-          ? `http://${process.env.HOST}/${repository.id}/`
-          : `http://localhost:3030/${repository.id}/`
-      );
+      break;
     }
     case "stop": {
       const repository = await db.repository.findFirst({
