@@ -1,18 +1,29 @@
 import * as React from "react";
-import { Box, Flex, Icon, IconButton, Input } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  IconButton,
+  Input,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { FaPlay, FaStop, FaSlidersH } from "react-icons/fa";
 import { useState } from "react";
+import { LogTerminal } from "./logTerminal";
 
 interface RepositoryCardProps {
   repository: {
     repositoryName: string;
     runState: "started" | "stopped";
+    containerId: string | null;
   };
   last?: boolean;
 }
 
 export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
   const [open, setOpen] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <form method="post" action="/?index">
@@ -82,7 +93,16 @@ export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
           marginLeft="10px"
           marginRight="10px"
         >
-          Hallo
+          <Button onClick={onOpen} disabled={repository.runState != "started"}>
+            Open Logs
+          </Button>
+          {repository.runState == "started" && repository.containerId ? (
+            <LogTerminal
+              isOpen={isOpen}
+              onClose={onClose}
+              containerId={repository.containerId}
+            />
+          ) : null}
         </Box>
       </Box>
     </form>

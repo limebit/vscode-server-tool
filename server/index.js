@@ -3,7 +3,7 @@ import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import * as serverBuild from "@remix-run/dev/server-build";
-import { createWebSocketStream, WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 import Dockerode from "dockerode";
 
 const app = express();
@@ -43,8 +43,6 @@ const server = app.listen(port, () => {
 const wsServer = new WebSocketServer({ server, path: "/api/ws" });
 wsServer.on("connection", (socket) => {
   socket.once("message", async (message) => {
-    const duplex = createWebSocketStream(socket, { encoding: "utf-8" });
-
     const containers = (await docker.listContainers()).filter(
       (container) => container.Id == message.toString()
     );
@@ -58,7 +56,15 @@ wsServer.on("connection", (socket) => {
         stderr: true,
       });
 
-      stream.pipe(duplex);
+      const listener = (chunk) => {
+        socket.send(chunk);
+      };
+
+      stream.addListener("data", listener);
+
+      socket.once("close", () => {
+        stream.removeListener("data", listener);
+      });
     }
   });
 });
