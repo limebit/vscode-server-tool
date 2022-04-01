@@ -31,10 +31,13 @@ export const RepositorySettings = ({
       ? `http://${process.env.HOST}/${repository.id}/`
       : `http://localhost:3030/${repository.id}/`;
 
+  const started = repository.runState == "started";
+
   return (
     <Collapse in={open} animate>
       <Tabs
         paddingTop="10px"
+        borderBottomRadius={last ? "10px" : undefined}
         backgroundColor="gray.50"
         boxShadow={
           last
@@ -46,20 +49,28 @@ export const RepositorySettings = ({
       >
         <Text margin="10px" fontWeight="bold">
           Repository Url:{" "}
-          <Link as="a" href={link} isExternal>
-            {link}
+          <Link
+            as="a"
+            href={started ? link : undefined}
+            isExternal
+            opacity={started ? 1 : 0.6}
+            cursor={started ? "pointer" : "not-allowed"}
+          >
+            {started ? (
+              link
+            ) : (
+              <Tooltip label="Start the Container to connect">{link}</Tooltip>
+            )}
           </Link>
         </Text>
         <TabList paddingX="10px">
-          <Tab>One</Tab>
+          <Tab>Settings</Tab>
           <Tab
-            isDisabled={repository.runState != "started"}
-            opacity={repository.runState == "started" ? 1 : 0.4}
-            cursor={
-              repository.runState == "started" ? "pointer" : "not-allowed"
-            }
+            isDisabled={!started}
+            opacity={started ? 1 : 0.4}
+            cursor={started ? "pointer" : "not-allowed"}
           >
-            {repository.runState == "started" ? (
+            {started ? (
               "Logs"
             ) : (
               <Tooltip label="Start the Container to see logs">Logs</Tooltip>
@@ -72,7 +83,7 @@ export const RepositorySettings = ({
           </TabPanel>
           <TabPanel>
             <Collapse in={tabIndex == 1} animate>
-              {repository.runState == "started" && repository.containerId ? (
+              {started && repository.containerId ? (
                 <LogTerminal containerId={repository.containerId} />
               ) : null}
             </Collapse>

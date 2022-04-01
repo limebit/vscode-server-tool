@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Box, Flex, Icon, IconButton, Input } from "@chakra-ui/react";
-import { FaPlay, FaStop, FaSlidersH } from "react-icons/fa";
+import { Box, Flex, Icon, IconButton, Input, Link } from "@chakra-ui/react";
+import { FaPlay, FaStop, FaSlidersH, FaExternalLinkAlt } from "react-icons/fa";
 import { useState } from "react";
 import { RepositorySettings } from "./repositorySettings";
 import { Repository } from "@prisma/client";
@@ -12,6 +12,10 @@ interface RepositoryCardProps {
 
 export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
   const [open, setOpen] = useState(false);
+  const link =
+    process.env.NODE_ENV == "production"
+      ? `http://${process.env.HOST}/${repository.id}/`
+      : `http://localhost:3030/${repository.id}/`;
 
   return (
     <form method="post" action="/?index">
@@ -77,6 +81,18 @@ export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
               }}
               onClick={() => setOpen(!open)}
             />
+            <Link
+              as="a"
+              href={repository.runState == "started" ? link : undefined}
+              isExternal
+            >
+              <IconButton
+                marginLeft="10px"
+                aria-label="Open Container"
+                icon={<Icon as={FaExternalLinkAlt} />}
+                disabled={repository.runState != "started"}
+              />
+            </Link>
           </Flex>
         </Flex>
         <RepositorySettings repository={repository} open={open} last={last} />
