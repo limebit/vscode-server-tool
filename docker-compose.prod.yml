@@ -34,6 +34,8 @@ services:
       - PORT=80
       - DATABASE_URL=postgres://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@vscode-database:5432/vscode-server-tool
       - SESSION_SECRET=${SESSION_SECRET:-my-secret}
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
       # Note that the PWD Environment variable doesn't exist on windows, so you'll have to assign the PWD the absolute path to this repository in the .env file
       - GIT_FOLDER_MOUNT=${PWD}/git-repos
     labels:
