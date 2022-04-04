@@ -1,15 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
 async function seed() {
   const username = process.env.ADMIN_USER ?? "admin";
-
-  const passwordHash = await bcrypt.hash(
-    process.env.ADMIN_PASSWORD ?? "admin",
-    10
-  );
 
   await prisma.user.upsert({
     where: {
@@ -18,7 +12,8 @@ async function seed() {
     update: {},
     create: {
       username,
-      passwordHash,
+      passwordHash:
+        "$2b$10$chDkdoKB/eO5u75vXrY0yOSQ.vKEc3PnlhnM0qhwnYXaDUP82dmBW", // hash for password admin
       githubToken: "",
     },
   });

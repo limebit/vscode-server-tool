@@ -14,13 +14,16 @@
     "postinstall": "remix setup node",
     "prisma:generate": "prisma generate",
     "prisma:db:push": "prisma db push",
+    "prisma:db:seed": "prisma db seed",
     "prisma:migrate": "prisma migrate dev --preview-feature",
-    "prisma:seed": "ts-node prisma/seed.ts",
     "prisma:studio": "prisma studio",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/.eslintcache --ext js,jsx,ts,tsx .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "tsc -b",
     "validate": "concurrently \"yarn run lint\" \"yarn run typecheck\" \"yarn run build\""
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@chakra-ui/react": "^1.8.6",
