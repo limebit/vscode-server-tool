@@ -21,19 +21,17 @@ import { FaTrash } from "react-icons/fa";
 interface RepositorySettingsProps {
   repository: Repository;
   open: boolean;
+  link: string;
   last?: boolean;
 }
 
 export const RepositorySettings = ({
   repository,
   open,
+  link,
   last,
 }: RepositorySettingsProps) => {
   const [tabIndex, setTabIndex] = useState(0);
-  const link =
-    process.env.NODE_ENV == "production"
-      ? `http://${process.env.HOST}/${repository.id}/`
-      : `http://localhost:3030/${repository.id}/`;
 
   const started = repository.runState == "started";
 

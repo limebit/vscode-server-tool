@@ -198,11 +198,20 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
 
-  return json(await db.repository.findMany({ where: { userId } }));
+  return json({
+    repositories: await db.repository.findMany({ where: { userId } }),
+    baseUrl:
+      process.env.NODE_ENV == "production"
+        ? `http://${process.env.HOST}/`
+        : `http://localhost:3030/`,
+  });
 };
 
 export default function Index() {
-  const repositories = useLoaderData<Repository[]>();
+  const { repositories, baseUrl } = useLoaderData<{
+    repositories: Repository[];
+    baseUrl: string;
+  }>();
 
   return (
     <Box display="grid" justifyContent="center">
@@ -243,7 +252,7 @@ export default function Index() {
             />
           </Flex>
         </Form>
-        <RepositoryTable repositories={repositories} />
+        <RepositoryTable repositories={repositories} baseUrl={baseUrl} />
       </Box>
     </Box>
   );
