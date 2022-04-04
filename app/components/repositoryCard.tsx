@@ -4,6 +4,7 @@ import { FaPlay, FaStop, FaSlidersH, FaExternalLinkAlt } from "react-icons/fa";
 import { useState } from "react";
 import { RepositorySettings } from "./repositorySettings";
 import { Repository } from "@prisma/client";
+import { Form } from "remix";
 
 interface RepositoryCardProps {
   repository: Repository;
@@ -18,7 +19,7 @@ export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
       : `http://localhost:3030/${repository.id}/`;
 
   return (
-    <form method="post" action="/?index">
+    <Form method="post">
       <Box
         borderBottom={last || open ? undefined : "1px"}
         borderColor="gray.200"
@@ -97,6 +98,6 @@ export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
         </Flex>
         <RepositorySettings repository={repository} open={open} last={last} />
       </Box>
-    </form>
+    </Form>
   );
 };

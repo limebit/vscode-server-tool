@@ -33,9 +33,15 @@ model User {
   passwordHash            String
   repositories            Repository[]
   githubToken             String
+  status                  UserStatus   @default(member)
 }
 
 enum RunState {
   started
   stopped
+}
+
+enum UserStatus {
+  admin
+  member
 }

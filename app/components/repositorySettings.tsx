@@ -9,10 +9,14 @@ import {
   Tooltip,
   Text,
   Link,
+  Flex,
+  Icon,
+  Button,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { LogTerminal } from "./logTerminal";
 import { Repository } from "@prisma/client";
+import { FaTrash } from "react-icons/fa";
 
 interface RepositorySettingsProps {
   repository: Repository;
@@ -78,10 +82,25 @@ export const RepositorySettings = ({
           </Tab>
         </TabList>
         <TabPanels paddingX="10px">
-          <TabPanel>
-            <p>one!</p>
+          <TabPanel paddingX="0px" paddingY="10px">
+            <Flex justifyContent="flex-end">
+              <Button
+                type="submit"
+                name="action"
+                value="delete"
+                backgroundColor="red.400"
+                color="white"
+                _hover={{ background: "red.500" }}
+                _active={{
+                  background: "red.500",
+                }}
+                rightIcon={<Icon as={FaTrash} />}
+              >
+                Delete
+              </Button>
+            </Flex>
           </TabPanel>
-          <TabPanel>
+          <TabPanel paddingX="0px">
             <Collapse in={tabIndex == 1} animate>
               {started && repository.containerId ? (
                 <LogTerminal containerId={repository.containerId} />
