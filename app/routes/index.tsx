@@ -94,7 +94,10 @@ export const action: ActionFunction = async ({ request }) => {
               process.env.GIT_FOLDER_MOUNT ?? gitFolder
             }/${userId}/${repositoryName}:/root/${repositoryName}`,
           ],
-          DeviceRequests: [{ Count: -1, Capabilities: [["gpu"]] }],
+          DeviceRequests:
+            process.env.ENABLE_GPU_PASSTHROUGH == "true"
+              ? [{ Count: -1, Capabilities: [["gpu"]] }]
+              : undefined,
         },
         Env: [`GIT_NAME=${user?.username}`, `REPOSITORY=${repositoryName}`],
       });
