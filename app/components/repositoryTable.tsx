@@ -5,13 +5,9 @@ import { RepositoryCard } from "~/components/repositoryCard";
 
 interface RepositoryTableProps {
   repositories: Repository[];
-  baseUrl: string;
 }
 
-export const RepositoryTable = ({
-  repositories,
-  baseUrl,
-}: RepositoryTableProps) => {
+export const RepositoryTable = ({ repositories }: RepositoryTableProps) => {
   return repositories.length > 0 ? (
     <Box
       marginTop="30px"
@@ -23,7 +19,6 @@ export const RepositoryTable = ({
         <RepositoryCard
           repository={repository}
           key={i}
-          baseUrl={baseUrl}
           last={i == repositories.length - 1}
         />
       ))}

@@ -8,17 +8,15 @@ import { Form } from "remix";
 
 interface RepositoryCardProps {
   repository: Repository;
-  baseUrl: string;
   last?: boolean;
 }
 
-export const RepositoryCard = ({
-  repository,
-  baseUrl,
-  last,
-}: RepositoryCardProps) => {
+export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
   const [open, setOpen] = useState(false);
-  const link = `${baseUrl}${repository.id}/`;
+  const link =
+    process.env.NODE_ENV == "production"
+      ? `http://${process.env.HOST}/${repository.id}/`
+      : `http://localhost:3030/${repository.id}/`;
 
   return (
     <Form method="post">
@@ -98,12 +96,7 @@ export const RepositoryCard = ({
             </Link>
           </Flex>
         </Flex>
-        <RepositorySettings
-          repository={repository}
-          open={open}
-          last={last}
-          link={link}
-        />
+        <RepositorySettings repository={repository} open={open} last={last} />
       </Box>
     </Form>
   );
