@@ -3,5 +3,5 @@
 set -ex
 yarn run prisma:generate
 yarn run prisma:db:push
-yarn run prisma:db:seed
+node --require ./node_modules/dotenv/config ./prisma-build/seed.js
 yarn run start

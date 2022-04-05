@@ -8,7 +8,7 @@ import {
   Input,
   Link,
 } from "@chakra-ui/react";
-import { Repository } from "@prisma/client";
+import type { Repository } from "@prisma/client";
 import {
   ActionFunction,
   json,
@@ -29,6 +29,8 @@ import { getUser, requireUserId } from "~/utils/session.server";
 import { RepositoryTable } from "~/components/repositoryTable";
 import { FaPlus } from "react-icons/fa";
 
+// TODO
+// eslint-disable-next-line complexity
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
 
@@ -78,7 +80,7 @@ export const action: ActionFunction = async ({ request }) => {
           [
             `traefik.http.middlewares.${repository.id}-auth.forwardauth.address`,
             process.env.NODE_ENV == "production"
-              ? `http://${process.env.HOST}/auth`
+              ? `http://${process.env.REACT_APP_HOST}/auth`
               : "http://host.docker.internal:3000/auth",
           ],
           [
@@ -158,7 +160,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       const user = await getUser(request);
 
-      if (!user) {
+      if (!user || !repositoryNameCleaned) {
         break;
       }
 

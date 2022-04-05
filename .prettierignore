@@ -5,6 +5,7 @@ node_modules/
 /.cache
 /build
 /server-build
+/prisma-build
 /public/build
 /coverage
 

@@ -1,12 +1,12 @@
-const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcrypt");
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
 async function seed() {
-  const username = process.env.ADMIN_USER || "admin";
+  const username = process.env.ADMIN_USER ?? "admin";
   const passwordHash = await bcrypt.hash(
-    process.env.ADMIN_PASSWORD || "admin",
+    process.env.ADMIN_PASSWORD ?? "admin",
     10
   );
 

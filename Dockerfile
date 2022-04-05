@@ -59,6 +59,10 @@ RUN true
 COPY --from=build /app/build /app/build
 RUN true
 COPY --from=build /app/public /app/public
+RUN true
+COPY --from=build /app/server-build /app/server-build
+RUN true
+COPY --from=build /app/prisma-build /app/prisma-build
 ADD . .
 
 ADD start.sh /

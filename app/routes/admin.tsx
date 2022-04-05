@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Box } from "@chakra-ui/react";
-import { LoaderFunction } from "remix";
+import type { LoaderFunction } from "remix";
 import { requireAdminId } from "~/utils/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {

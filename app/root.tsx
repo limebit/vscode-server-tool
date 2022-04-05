@@ -1,12 +1,28 @@
-import React, { useContext, useEffect } from 'react';
-import { withEmotionCache } from '@emotion/react';
-import { ChakraProvider } from '@chakra-ui/react';
+import React, { useContext, useEffect } from "react";
+import { withEmotionCache } from "@emotion/react";
+import { ChakraProvider } from "@chakra-ui/react";
 
-import { ServerStyleContext, ClientStyleContext } from './context';
-import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
+import { ServerStyleContext, ClientStyleContext } from "./context";
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+} from "@remix-run/react";
+import { json } from "remix";
+import { getEnv } from "./utils/env.server";
 
 interface DocumentProps {
   children: React.ReactNode;
+}
+
+export async function loader() {
+  return json({
+    ENV: getEnv(),
+  });
 }
 
 const Document = withEmotionCache(
@@ -27,8 +43,10 @@ const Document = withEmotionCache(
       });
       // reset cache to reapply global styles
       clientStyleData?.reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const data = useLoaderData();
 
     return (
       <html lang="en">
@@ -46,7 +64,7 @@ const Document = withEmotionCache(
           {serverSyleData?.map(({ key, ids, css }) => (
             <style
               key={key}
-              data-emotion={`${key} ${ids.join(' ')}`}
+              data-emotion={`${key} ${ids.join(" ")}`}
               dangerouslySetInnerHTML={{ __html: css }}
             />
           ))}
@@ -54,8 +72,13 @@ const Document = withEmotionCache(
         <body>
           {children}
           <ScrollRestoration />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+            }}
+          />
           <Scripts />
-          {process.env.NODE_ENV === 'development' ? <LiveReload /> : null}
+          {process.env.NODE_ENV === "development" ? <LiveReload /> : null}
         </body>
       </html>
     );
@@ -69,5 +92,5 @@ export default function App() {
         <Outlet />
       </ChakraProvider>
     </Document>
-  )
+  );
 }

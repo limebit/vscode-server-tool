@@ -5,7 +5,9 @@
 .vscode
 .env
 
-build
+/build
+/server-build
+/prisma-build
 docs
 infrastructure
 node_modules

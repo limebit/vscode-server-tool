@@ -2,9 +2,20 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
-import * as serverBuild from "@remix-run/dev/server-build";
 import { WebSocketServer } from "ws";
 import Dockerode from "dockerode";
+import path from "path";
+
+const BUILD_DIR = path.join(process.cwd(), "build");
+
+const purgeRequireCache = () => {
+  for (const key in require.cache) {
+    if (key.startsWith(BUILD_DIR)) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete require.cache[key];
+    }
+  }
+};
 
 const app = express();
 
@@ -27,27 +38,36 @@ app.use(morgan("tiny"));
 
 app.all(
   "*",
-  createRequestHandler({
-    build: serverBuild,
-    mode: process.env.NODE_ENV,
-  })
+  process.env.NODE_ENV === "production"
+    ? createRequestHandler({ build: require("../build") })
+    : (req, res, next) => {
+        purgeRequireCache();
+        return createRequestHandler({
+          build: require("../build"),
+          mode: process.env.NODE_ENV,
+        })(req, res, next);
+      }
 );
 
 const docker = new Dockerode();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ?? 3000;
 
 const server = app.listen(port, () => {
+  require("../build");
   console.log(`Express server listening on port ${port}`);
 });
+
 const wsServer = new WebSocketServer({ server, path: "/api/ws" });
 wsServer.on("connection", (socket) => {
   socket.once("message", async (message) => {
     const containers = (await docker.listContainers()).filter(
+      // TODO
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       (container) => container.Id == message.toString()
     );
 
-    if (containers.length > 0) {
+    if (containers.length > 0 && containers[0]) {
       const container = docker.getContainer(containers[0].Id);
 
       const stream = await container.attach({
@@ -56,7 +76,7 @@ wsServer.on("connection", (socket) => {
         stderr: true,
       });
 
-      const listener = (chunk) => {
+      const listener = (chunk: string) => {
         socket.send(chunk);
       };
 
