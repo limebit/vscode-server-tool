@@ -1,6 +1,6 @@
 import { LoaderFunction, redirect } from "remix";
-import { db } from "~/utils/prisma.server";
-import { getUserId } from "~/utils/session.server";
+import { db } from "../utils/prisma.server";
+import { getUserId } from "../utils/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);

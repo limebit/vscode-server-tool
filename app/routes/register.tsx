@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Heading, Input } from "@chakra-ui/react";
 import * as React from "react";
 import type { ActionFunction } from "remix";
-import { createUserSession, register } from "~/utils/session.server";
+import { createUserSession, register } from "../utils/session.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const { username, token, password } = Object.fromEntries(

@@ -10,7 +10,7 @@ export const useDockerLogs = (containerId: string) => {
   const [reconnect, dispatchReconnect] = useReducer(() => ({}), {});
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:3000/api/ws");
+    const ws = new WebSocket(`ws://${window.ENV.HOST}/api/ws`);
 
     ws.onopen = () => {
       ws.send(containerId);
@@ -22,7 +22,7 @@ export const useDockerLogs = (containerId: string) => {
 
     ws.onclose = (e) => {
       if (!e.wasClean) {
-        ("Websocket connection cloes. Reconnecting...");
+        console.log("Websocket connection cloes. Reconnecting...");
       }
       setTimeout(dispatchReconnect, 1000);
     };

@@ -21,8 +21,7 @@ for (const file of allFiles) {
   }
 }
 
-console.log();
-console.log("building...");
+console.log("\nbuilding...");
 
 require("esbuild")
   .build({

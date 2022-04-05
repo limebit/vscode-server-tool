@@ -1,7 +1,7 @@
 function getEnv() {
   return {
     NODE_ENV: process.env.NODE_ENV,
-    HOST: process.env.HOST ?? "localhost",
+    HOST: process.env.HOST,
   };
 }
 

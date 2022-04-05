@@ -3,20 +3,22 @@ import { Box, Flex, Icon, IconButton, Input, Link } from "@chakra-ui/react";
 import { FaPlay, FaStop, FaSlidersH, FaExternalLinkAlt } from "react-icons/fa";
 import { useState } from "react";
 import { RepositorySettings } from "./repositorySettings";
-import { Repository } from "@prisma/client";
+import type { Repository } from "@prisma/client";
 import { Form } from "remix";
 
 interface RepositoryCardProps {
   repository: Repository;
+  containerBaseUrl: string;
   last?: boolean;
 }
 
-export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
+export const RepositoryCard = ({
+  repository,
+  containerBaseUrl,
+  last,
+}: RepositoryCardProps) => {
   const [open, setOpen] = useState(false);
-  const link =
-    process.env.NODE_ENV == "production"
-      ? `http://${process.env.HOST}/${repository.id}/`
-      : `http://localhost:3030/${repository.id}/`;
+  const link = `http://${containerBaseUrl}/${repository.id}/`;
 
   return (
     <Form method="post">
@@ -96,7 +98,12 @@ export const RepositoryCard = ({ repository, last }: RepositoryCardProps) => {
             </Link>
           </Flex>
         </Flex>
-        <RepositorySettings repository={repository} open={open} last={last} />
+        <RepositorySettings
+          repository={repository}
+          open={open}
+          last={last}
+          link={link}
+        />
       </Box>
     </Form>
   );

@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Heading, Input, Link } from "@chakra-ui/react";
 import * as React from "react";
 import { ActionFunction, Link as ReachLink, redirect } from "remix";
-import { createUserSession, login } from "~/utils/session.server";
+import { createUserSession, login } from "../utils/session.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const { username, password } = Object.fromEntries(await request.formData());

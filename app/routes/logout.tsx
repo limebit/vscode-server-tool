@@ -1,5 +1,5 @@
 import type { ActionFunction, LoaderFunction } from "remix";
-import { logout } from "~/utils/session.server";
+import { logout } from "../utils/session.server";
 
 export const action: ActionFunction = async ({ request }) => {
   return logout(request);

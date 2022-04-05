@@ -1,13 +1,17 @@
 import * as React from "react";
 import { Box } from "@chakra-ui/react";
-import { Repository } from "@prisma/client";
-import { RepositoryCard } from "~/components/repositoryCard";
+import type { Repository } from "@prisma/client";
+import { RepositoryCard } from "../components/repositoryCard";
 
 interface RepositoryTableProps {
   repositories: Repository[];
+  containerBaseUrl: string;
 }
 
-export const RepositoryTable = ({ repositories }: RepositoryTableProps) => {
+export const RepositoryTable = ({
+  repositories,
+  containerBaseUrl,
+}: RepositoryTableProps) => {
   return repositories.length > 0 ? (
     <Box
       marginTop="30px"
@@ -19,6 +23,7 @@ export const RepositoryTable = ({ repositories }: RepositoryTableProps) => {
         <RepositoryCard
           repository={repository}
           key={i}
+          containerBaseUrl={containerBaseUrl}
           last={i == repositories.length - 1}
         />
       ))}

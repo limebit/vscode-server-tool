@@ -18,16 +18,21 @@ import {
   Link as RemixLink,
   Form,
 } from "remix";
-import { docker } from "~/utils/docker.server";
+import { docker } from "../utils/docker.server";
 import {
   deleteRepository,
   cloneRepository,
   gitFolder,
-} from "~/utils/git.server";
-import { db } from "~/utils/prisma.server";
-import { getUser, requireUserId } from "~/utils/session.server";
-import { RepositoryTable } from "~/components/repositoryTable";
+} from "../utils/git.server";
+import { db } from "../utils/prisma.server";
+import { getUser, requireUserId } from "../utils/session.server";
+import { RepositoryTable } from "../components/repositoryTable";
 import { FaPlus } from "react-icons/fa";
+
+type LoaderData = {
+  repositories: Repository[];
+  containerBaseUrl: string;
+};
 
 // TODO
 // eslint-disable-next-line complexity
@@ -80,7 +85,7 @@ export const action: ActionFunction = async ({ request }) => {
           [
             `traefik.http.middlewares.${repository.id}-auth.forwardauth.address`,
             process.env.NODE_ENV == "production"
-              ? `http://${process.env.REACT_APP_HOST}/auth`
+              ? `http://${process.env.HOST}/auth`
               : "http://host.docker.internal:3000/auth",
           ],
           [
@@ -145,6 +150,7 @@ export const action: ActionFunction = async ({ request }) => {
       const repositoryMatch = (formData.get("repositoryName") as string).match(
         /(?<=\/)[^/]*(?=\.git$)/
       );
+
       if (!repositoryMatch) {
         break;
       }
@@ -200,11 +206,17 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
 
-  return json(await db.repository.findMany({ where: { userId } }));
+  return json({
+    containerBaseUrl:
+      process.env.NODE_ENV === "production"
+        ? process.env.HOST
+        : "localhost:3000",
+    repositories: await db.repository.findMany({ where: { userId } }),
+  });
 };
 
 export default function Index() {
-  const repositories = useLoaderData<Repository[]>();
+  const data = useLoaderData<LoaderData>();
 
   return (
     <Box display="grid" justifyContent="center">
@@ -245,7 +257,10 @@ export default function Index() {
             />
           </Flex>
         </Form>
-        <RepositoryTable repositories={repositories} />
+        <RepositoryTable
+          repositories={data.repositories}
+          containerBaseUrl={data.containerBaseUrl}
+        />
       </Box>
     </Box>
   );

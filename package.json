@@ -8,12 +8,14 @@
   "scripts": {
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build \"./app/styles/**/*.css\"",
     "prebuild": "yarn run clean",
-    "build:remix": "cross-env NODE_ENV=production dotenv -e .env remix build --sourcemap",
+    "build:remix": "cross-env NODE_ENV=production dotenv -e .env remix build",
     "build:server": "node ./config/build-server.js",
     "build:prisma": "node ./config/build-prisma.js",
     "build": "yarn run build:remix && yarn run build:server && yarn run build:prisma",
     "predev": "cd docker && docker build --tag vscode-server-tool -f Dockerfile.vscode .",
-    "dev": "pm2-dev ./config/pm2.config.js",
+    "dev": "concurrently \"yarn run dev:server\" \"yarn run dev:remix\"",
+    "dev:server": "cross-env NODE_ENV=development node --inspect ./index.js",
+    "dev:remix": "cross-env NODE_ENV=development remix watch",
     "start": "cross-env NODE_ENV=production node --require ./node_modules/dotenv/config ./index.js",
     "postinstall": "remix setup node",
     "prisma:generate": "prisma generate",
@@ -79,9 +81,9 @@
     "eslint-config-kentcdodds": "^19.2.0",
     "glob": "^7.2.0",
     "nodemon": "^2.0.15",
-    "pm2": "^5.2.0",
     "prisma": "^3.11.1",
     "rimraf": "^3.0.2",
+    "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
   },
   "eslintIgnore": [

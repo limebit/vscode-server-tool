@@ -36,6 +36,7 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:-my-secret}
       - ADMIN_USER=${ADMIN_USER:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - ENABLE_GPU_PASSTHROUGH=${ENABLE_GPU_PASSTHROUGH:-false}
       # Note that the PWD Environment variable doesn't exist on windows, so you'll have to assign the PWD the absolute path to this repository in the .env file
       - GIT_FOLDER_MOUNT=${PWD}/git-repos
     labels:
