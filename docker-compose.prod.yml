@@ -1,4 +1,4 @@
-version: "3"
+version: "2.1"
 services:
   database:
     container_name: vscode-database
