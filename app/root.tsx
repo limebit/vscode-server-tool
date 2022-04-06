@@ -2,7 +2,6 @@ import React, { useContext, useEffect } from "react";
 import { withEmotionCache } from "@emotion/react";
 import { ChakraProvider } from "@chakra-ui/react";
 
-import { ServerStyleContext, ClientStyleContext } from "./context";
 import {
   Links,
   LiveReload,
@@ -13,6 +12,7 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { json } from "remix";
+import { ServerStyleContext, ClientStyleContext } from "./context";
 import { getEnv } from "./utils/env.server";
 
 interface DocumentProps {

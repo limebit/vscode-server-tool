@@ -1,11 +1,11 @@
 import { renderToString } from "react-dom/server";
 import * as React from "react";
-import createEmotionCache from "./createEmotionCache";
 import createEmotionServer from "@emotion/server/create-instance";
-import { ServerStyleContext } from "./context";
 import { CacheProvider } from "@emotion/react";
 import type { EntryContext } from "@remix-run/react/entry";
 import { RemixServer } from "@remix-run/react";
+import createEmotionCache from "./createEmotionCache";
+import { ServerStyleContext } from "./context";
 import { getEnv } from "./utils/env.server";
 
 global.ENV = getEnv();

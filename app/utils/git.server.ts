@@ -1,6 +1,6 @@
-import simpleGit from "simple-git";
 import { rm, mkdir } from "fs/promises";
 import path from "path";
+import simpleGit from "simple-git";
 import type { User } from "@prisma/client";
 
 const gitFolder = path.resolve(process.cwd(), "git-repos");

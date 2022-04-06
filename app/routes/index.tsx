@@ -18,6 +18,7 @@ import {
   Link as RemixLink,
   Form,
 } from "remix";
+import { FaPlus } from "react-icons/fa";
 import { docker } from "../utils/docker.server";
 import {
   deleteRepository,
@@ -27,7 +28,6 @@ import {
 import { db } from "../utils/prisma.server";
 import { getUser, requireUserId } from "../utils/session.server";
 import { RepositoryTable } from "../components/repositoryTable";
-import { FaPlus } from "react-icons/fa";
 
 type LoaderData = {
   repositories: Repository[];

@@ -2,9 +2,9 @@ import * as React from "react";
 import { Box, Flex, Icon, IconButton, Input, Link } from "@chakra-ui/react";
 import { FaPlay, FaStop, FaSlidersH, FaExternalLinkAlt } from "react-icons/fa";
 import { useState } from "react";
-import { RepositorySettings } from "./repositorySettings";
 import type { Repository } from "@prisma/client";
 import { Form } from "remix";
+import { RepositorySettings } from "./repositorySettings";
 
 interface RepositoryCardProps {
   repository: Repository;

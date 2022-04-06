@@ -14,9 +14,9 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { LogTerminal } from "./logTerminal";
 import type { Repository } from "@prisma/client";
 import { FaTrash } from "react-icons/fa";
+import { LogTerminal } from "./logTerminal";
 
 interface RepositorySettingsProps {
   repository: Repository;

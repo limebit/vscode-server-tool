@@ -1,10 +1,10 @@
+import path from "path";
 import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import { WebSocketServer } from "ws";
 import Dockerode from "dockerode";
-import path from "path";
 
 const BUILD_DIR = path.join(process.cwd(), "build");
 
@@ -62,7 +62,6 @@ const wsServer = new WebSocketServer({ server, path: "/api/ws" });
 wsServer.on("connection", (socket) => {
   socket.once("message", async (message) => {
     const containers = (await docker.listContainers()).filter(
-      // TODO
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       (container) => container.Id == message.toString()
     );

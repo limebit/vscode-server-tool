@@ -9,7 +9,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect("", 404);
   }
 
-  const containerId = request.headers.get("x-forwarded-prefix")!.substring(1);
+  const containerId = request.headers.get("x-forwarded-prefix")?.substring(1);
 
   const container = await db.repository.findFirst({
     where: { id: containerId },
