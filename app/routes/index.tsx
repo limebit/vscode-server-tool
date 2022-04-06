@@ -210,7 +210,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     containerBaseUrl:
       process.env.NODE_ENV === "production"
         ? process.env.HOST
-        : "localhost:3000",
+        : "localhost:3030",
     repositories: await db.repository.findMany({ where: { userId } }),
   });
 };

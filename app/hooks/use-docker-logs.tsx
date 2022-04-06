@@ -10,7 +10,13 @@ export const useDockerLogs = (containerId: string) => {
   const [reconnect, dispatchReconnect] = useReducer(() => ({}), {});
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://${window.ENV.HOST}/api/ws`);
+    const ws = new WebSocket(
+      `ws://${
+        process.env.NODE_ENV === "production"
+          ? window.ENV.HOST
+          : "localhost:3000"
+      }/api/ws`
+    );
 
     ws.onopen = () => {
       ws.send(containerId);
