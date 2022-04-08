@@ -114,13 +114,11 @@ export const action: ActionFunction = async ({ request }) => {
         where: { user, repositoryName },
       });
 
-      if (!repository || !repository.containerId) {
-        break;
+      if (repository?.containerId) {
+        await stopContainer(repository.containerId);
       }
 
-      await stopContainer(repository.containerId);
-
-      await db.repository.delete({ where: { id: repository.id } });
+      await db.repository.delete({ where: { id: repository?.id } });
 
       await deleteRepository(repositoryName, user.id);
 
