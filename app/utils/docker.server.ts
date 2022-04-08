@@ -23,7 +23,13 @@ export const createContainer = async (
         }PathPrefix(\`/${repository.id}\`)`,
       ],
       [`traefik.http.routers.${repository.id}.priority`, `2`],
-      [`traefik.http.routers.${repository.id}.entrypoints`, "web"],
+      process.env.NODE_ENV === "production" && process.env.ENABLE_TLS === "true"
+        ? [`traefik.http.routers.${repository.id}.entrypoints`, "websecure"]
+        : [`traefik.http.routers.${repository.id}.entrypoints`, "web"],
+      ...(process.env.NODE_ENV === "production" &&
+      process.env.ENABLE_TLS === "true"
+        ? [[`traefik.http.routers.${repository.id}.tls`, "true"]]
+        : []),
       [
         `traefik.http.middlewares.${repository.id}-stripprefix.stripprefix.prefixes`,
         `/${repository.id}`,

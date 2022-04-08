@@ -42,21 +42,37 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(${HOSTS:-`localhost`})"
-      - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.routers.frontend.priority=1"
+
+      # Switch if you want to enable tls
+      - "traefik.http.routers.frontend.entrypoints=web"
+      # - "traefik.http.routers.frontend.entrypoints=websecure"
+
+      # Uncomment if you want to enable tls
+      # - "traefik.http.routers.frontend.tls: true"
   traefik:
     image: traefik:v2.6
     ports:
       - "80:80"
+      # Uncomment if you want to enable tls
+      # - "443:443"
     networks:
       - traefik_default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+      # Uncomment if you want to enable tls
+      # - ./config/traefik:/etc/traefik
+      # - ${CERT_PATH}:/certs
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=traefik_default
       - --entrypoints.web.address=:80
+
+      # Uncomment if you want to enable tls
+      # - --entrypoints.websecure.address=:443
+      # - --providers.file.filename=/etc/traefik/certs.toml
 
 networks:
   traefik_default:
