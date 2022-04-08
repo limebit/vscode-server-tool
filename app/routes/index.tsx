@@ -20,14 +20,10 @@ import {
   useTransition,
 } from "remix";
 import { FaPlus } from "react-icons/fa";
-import { docker } from "../utils/docker.server";
-import {
-  deleteRepository,
-  cloneRepository,
-  gitFolder,
-} from "../utils/git.server";
+import { createContainer, stopContainer } from "../utils/docker.server";
+import { deleteRepository, cloneRepository } from "../utils/git.server";
 import { db } from "../utils/prisma.server";
-import { getUser, requireUserId } from "../utils/session.server";
+import { requireUser, requireUserId } from "../utils/session.server";
 import { RepositoryTable } from "../components/repositoryTable";
 
 type LoaderData = {
@@ -35,10 +31,8 @@ type LoaderData = {
   containerBaseUrl: string;
 };
 
-// TODO
-// eslint-disable-next-line complexity
 export const action: ActionFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
+  const user = await requireUser(request);
 
   const formData = await request.formData();
 
@@ -47,7 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
   switch (formData.get("action")) {
     case "start": {
       const repository = await db.repository.findFirst({
-        where: { userId, repositoryName },
+        where: { user, repositoryName },
       });
       if (!repository) {
         break;
@@ -62,85 +56,28 @@ export const action: ActionFunction = async ({ request }) => {
           : null;
       }
 
-      const user = await getUser(request);
-
-      const container = await docker.createContainer({
-        Image: "vscode-server-tool",
-        ExposedPorts: { "8080/tcp": {} },
-        Labels: Object.fromEntries([
-          ["traefik.enable", "true"],
-          [
-            `traefik.http.routers.${repository.id}.rule`,
-            `${
-              process.env.NODE_ENV == "production"
-                ? `Host(\`${process.env.HOST}\`) && `
-                : ``
-            }PathPrefix(\`/${repository.id}\`)`,
-          ],
-          [`traefik.http.routers.${repository.id}.priority`, `2`],
-          [`traefik.http.routers.${repository.id}.entrypoints`, "web"],
-          [
-            `traefik.http.middlewares.${repository.id}-stripprefix.stripprefix.prefixes`,
-            `/${repository.id}`,
-          ],
-          [
-            `traefik.http.middlewares.${repository.id}-auth.forwardauth.address`,
-            process.env.NODE_ENV == "production"
-              ? `http://${process.env.HOST}/auth`
-              : "http://host.docker.internal:3000/auth",
-          ],
-          [
-            `traefik.http.routers.${repository.id}.middlewares`,
-            `${repository.id}-stripprefix@docker,${repository.id}-auth@docker`,
-          ],
-          ["traefik.docker.network", "vscode-server-tool_traefik_default"],
-        ]),
-        HostConfig: {
-          AutoRemove: true,
-          Binds: [
-            `${
-              process.env.GIT_FOLDER_MOUNT ?? gitFolder
-            }/${userId}/${repositoryName}:/root/${repositoryName}`,
-          ],
-          DeviceRequests:
-            process.env.ENABLE_GPU_PASSTHROUGH == "true"
-              ? [{ Count: -1, Capabilities: [["gpu"]] }]
-              : undefined,
-        },
-        Tty: true,
-        Env: [`GIT_NAME=${user?.username}`, `REPOSITORY=${repositoryName}`],
-      });
-
-      const network = docker.getNetwork("vscode-server-tool_traefik_default");
-      await network.connect({ Container: container.id });
-      await container.start();
+      const containerId = await createContainer(repository, user);
 
       await db.repository.update({
         where: { id: repository.id },
-        data: { runState: "started", containerId: container.id },
+        data: { runState: "started", containerId },
       });
 
       break;
     }
     case "stop": {
       const repository = await db.repository.findFirst({
-        where: { userId, repositoryName },
+        where: { user, repositoryName },
       });
-      if (!repository || repository.runState == "stopped") {
+      if (
+        !repository ||
+        !repository.containerId ||
+        repository.runState == "stopped"
+      ) {
         break;
       }
 
-      const containers = (await docker.listContainers()).filter(
-        (container) => container.Id == (repository.containerId as string)
-      );
-
-      if (containers.length > 0) {
-        await Promise.all(
-          containers.map((container) =>
-            docker.getContainer(container.Id).stop()
-          )
-        );
-      }
+      await stopContainer(repository.containerId);
 
       await db.repository.update({
         where: { id: repository.id },
@@ -149,9 +86,7 @@ export const action: ActionFunction = async ({ request }) => {
       break;
     }
     case "create": {
-      const repositoryMatch = (formData.get("repositoryName") as string).match(
-        /(?<=\/)[^/]*(?=\.git$)/
-      );
+      const repositoryMatch = repositoryName.match(/(?<=\/)[^/]*(?=\.git$)/);
 
       if (!repositoryMatch) {
         break;
@@ -159,47 +94,35 @@ export const action: ActionFunction = async ({ request }) => {
       const repositoryNameCleaned = repositoryMatch[0];
 
       const repository = await db.repository.findFirst({
-        where: { userId, repositoryName: repositoryNameCleaned },
+        where: { user, repositoryName: repositoryNameCleaned },
       });
 
-      if (repository != null) {
-        break;
-      }
-
-      const user = await getUser(request);
-
-      if (!user || !repositoryNameCleaned) {
+      if (repository != null || !repositoryNameCleaned) {
         break;
       }
 
       await cloneRepository(repositoryName, user);
 
       await db.repository.create({
-        data: { repositoryName: repositoryNameCleaned, userId },
+        data: { repositoryName: repositoryNameCleaned, userId: user.id },
       });
 
       break;
     }
     case "delete": {
       const repository = await db.repository.findFirst({
-        where: { userId, repositoryName },
+        where: { user, repositoryName },
       });
 
-      const containers = (await docker.listContainers()).filter(
-        (container) => container.Id == (repository?.containerId as string)
-      );
-
-      if (containers.length > 0) {
-        await Promise.all(
-          containers.map((container) =>
-            docker.getContainer(container.Id).stop()
-          )
-        );
+      if (!repository || !repository.containerId) {
+        break;
       }
 
-      await db.repository.delete({ where: { id: repository?.id } });
+      await stopContainer(repository.containerId);
 
-      await deleteRepository(repositoryName, userId);
+      await db.repository.delete({ where: { id: repository.id } });
+
+      await deleteRepository(repositoryName, user.id);
 
       break;
     }

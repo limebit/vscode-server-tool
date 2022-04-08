@@ -70,6 +70,15 @@ export async function requireUserId(request: Request) {
   return userId;
 }
 
+export async function requireUser(request: Request) {
+  const session = await getUserSession(request);
+  const userId = session.get("userId");
+  if (!userId || typeof userId !== "string") throw redirect("/login");
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user) throw redirect("/login");
+  return user;
+}
+
 export async function requireAdminId(request: Request) {
   const session = await getUserSession(request);
   const userId = session.get("userId");
