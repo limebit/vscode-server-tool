@@ -62,7 +62,6 @@ const wsServer = new WebSocketServer({ server, path: "/api/ws" });
 wsServer.on("connection", (socket) => {
   socket.once("message", async (message) => {
     const containers = (await docker.listContainers()).filter(
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       (container) => container.Id == message.toString()
     );
 

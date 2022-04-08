@@ -107,6 +107,7 @@ export const action: ActionFunction = async ({ request }) => {
               ? [{ Count: -1, Capabilities: [["gpu"]] }]
               : undefined,
         },
+        Tty: true,
         Env: [`GIT_NAME=${user?.username}`, `REPOSITORY=${repositoryName}`],
       });
 
