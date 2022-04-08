@@ -17,6 +17,7 @@ import {
   useLoaderData,
   Link as RemixLink,
   Form,
+  useTransition,
 } from "remix";
 import { FaPlus } from "react-icons/fa";
 import { docker } from "../utils/docker.server";
@@ -188,7 +189,11 @@ export const action: ActionFunction = async ({ request }) => {
       );
 
       if (containers.length > 0) {
-        containers.map((container) => docker.getContainer(container.Id).stop());
+        await Promise.all(
+          containers.map((container) =>
+            docker.getContainer(container.Id).stop()
+          )
+        );
       }
 
       await db.repository.delete({ where: { id: repository?.id } });
@@ -217,6 +222,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function Index() {
   const data = useLoaderData<LoaderData>();
+  const transition = useTransition();
 
   return (
     <Box display="grid" justifyContent="center">
@@ -254,6 +260,9 @@ export default function Index() {
               marginLeft="10px"
               aria-label="load git repo"
               icon={<Icon as={FaPlus} />}
+              isLoading={
+                transition.submission?.formData.get("action") === "create"
+              }
             />
           </Flex>
         </Form>

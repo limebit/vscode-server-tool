@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import type { Repository } from "@prisma/client";
 import { FaTrash } from "react-icons/fa";
+import { useTransition } from "remix";
 import { LogTerminal } from "./logTerminal";
 
 interface RepositorySettingsProps {
@@ -32,6 +33,7 @@ export const RepositorySettings = ({
   last,
 }: RepositorySettingsProps) => {
   const [tabIndex, setTabIndex] = useState(0);
+  const transition = useTransition();
 
   const started = repository.runState == "started";
 
@@ -93,6 +95,9 @@ export const RepositorySettings = ({
                   background: "red.500",
                 }}
                 rightIcon={<Icon as={FaTrash} />}
+                isLoading={
+                  transition.submission?.formData.get("action") === "delete"
+                }
               >
                 Delete
               </Button>

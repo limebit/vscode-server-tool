@@ -3,7 +3,7 @@ import { Box, Flex, Icon, IconButton, Input, Link } from "@chakra-ui/react";
 import { FaPlay, FaStop, FaSlidersH, FaExternalLinkAlt } from "react-icons/fa";
 import { useState } from "react";
 import type { Repository } from "@prisma/client";
-import { Form } from "remix";
+import { Form, useTransition } from "remix";
 import { RepositorySettings } from "./repositorySettings";
 
 interface RepositoryCardProps {
@@ -19,6 +19,7 @@ export const RepositoryCard = ({
 }: RepositoryCardProps) => {
   const [open, setOpen] = useState(false);
   const link = `http://${containerBaseUrl}/${repository.id}/`;
+  const transition = useTransition();
 
   return (
     <Form method="post">
@@ -55,6 +56,9 @@ export const RepositoryCard = ({
                 _active={{
                   background: "red.200",
                 }}
+                isLoading={
+                  transition.submission?.formData.get("action") === "stop"
+                }
               />
             ) : (
               <IconButton
@@ -70,6 +74,9 @@ export const RepositoryCard = ({
                 _active={{
                   background: "green.200",
                 }}
+                isLoading={
+                  transition.submission?.formData.get("action") === "start"
+                }
               />
             )}
             <IconButton
