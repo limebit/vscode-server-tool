@@ -13,7 +13,7 @@ export const useDockerLogs = (containerId: string) => {
     const ws = new WebSocket(
       `ws://${
         process.env.NODE_ENV === "production"
-          ? window.ENV.HOST
+          ? window.location.hostname
           : "localhost:3000"
       }/api/ws`
     );

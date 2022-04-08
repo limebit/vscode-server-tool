@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: vscode-server-tool
     tty: true
+    volumes:
+      - ./dev-data:/var/lib/postgresql/data
   traefik:
     image: traefik:v2.6
     ports:

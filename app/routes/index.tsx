@@ -13,7 +13,6 @@ import {
   ActionFunction,
   json,
   LoaderFunction,
-  redirect,
   useLoaderData,
   Link as RemixLink,
   Form,
@@ -47,16 +46,14 @@ export const action: ActionFunction = async ({ request }) => {
         break;
       }
       if (repository.runState == "started") {
-        return repository.containerId
-          ? redirect(
-              process.env.NODE_ENV == "production"
-                ? `http://${process.env.HOST}/${repository.id}/`
-                : `http://localhost:3030/${repository.id}/`
-            )
-          : null;
+        break;
       }
 
-      const containerId = await createContainer(repository, user);
+      const containerId = await createContainer(
+        repository,
+        user,
+        request.headers.get("host")
+      );
 
       await db.repository.update({
         where: { id: repository.id },
@@ -136,7 +133,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({
     containerBaseUrl:
       process.env.NODE_ENV === "production"
-        ? process.env.HOST
+        ? request.headers.get("host")
         : "localhost:3030",
     repositories: await db.repository.findMany({ where: { userId } }),
   });

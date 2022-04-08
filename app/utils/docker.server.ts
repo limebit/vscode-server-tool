@@ -4,7 +4,11 @@ import { gitFolder } from "./git.server";
 
 const docker = new Dockerode();
 
-export const createContainer = async (repository: Repository, user: User) => {
+export const createContainer = async (
+  repository: Repository,
+  user: User,
+  forwardUrl: string | null
+) => {
   const container = await docker.createContainer({
     Image: "vscode-server-tool",
     ExposedPorts: { "8080/tcp": {} },
@@ -13,8 +17,8 @@ export const createContainer = async (repository: Repository, user: User) => {
       [
         `traefik.http.routers.${repository.id}.rule`,
         `${
-          process.env.NODE_ENV == "production"
-            ? `Host(\`${process.env.HOST}\`) && `
+          process.env.NODE_ENV === "production"
+            ? `Host(${process.env.HOSTS}) && `
             : ``
         }PathPrefix(\`/${repository.id}\`)`,
       ],
@@ -26,8 +30,8 @@ export const createContainer = async (repository: Repository, user: User) => {
       ],
       [
         `traefik.http.middlewares.${repository.id}-auth.forwardauth.address`,
-        process.env.NODE_ENV == "production"
-          ? `http://${process.env.HOST}/auth`
+        process.env.NODE_ENV === "production"
+          ? `http://${forwardUrl}/auth`
           : "http://host.docker.internal:3000/auth",
       ],
       [
