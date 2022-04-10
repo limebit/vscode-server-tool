@@ -96,7 +96,9 @@ export const RepositorySettings = ({
                 }}
                 rightIcon={<Icon as={FaTrash} />}
                 isLoading={
-                  transition.submission?.formData.get("action") === "delete"
+                  transition.submission?.formData.get("action") === "delete" &&
+                  transition.submission.formData.get("repositoryName") ===
+                    repository.repositoryName
                 }
               >
                 Delete

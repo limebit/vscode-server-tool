@@ -57,7 +57,9 @@ export const RepositoryCard = ({
                   background: "red.200",
                 }}
                 isLoading={
-                  transition.submission?.formData.get("action") === "stop"
+                  transition.submission?.formData.get("action") === "stop" &&
+                  transition.submission.formData.get("repositoryName") ===
+                    repository.repositoryName
                 }
               />
             ) : (
@@ -75,7 +77,9 @@ export const RepositoryCard = ({
                   background: "green.200",
                 }}
                 isLoading={
-                  transition.submission?.formData.get("action") === "start"
+                  transition.submission?.formData.get("action") === "start" &&
+                  transition.submission.formData.get("repositoryName") ===
+                    repository.repositoryName
                 }
               />
             )}
