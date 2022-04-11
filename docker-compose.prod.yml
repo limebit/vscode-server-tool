@@ -34,6 +34,7 @@ services:
       - PORT=80
       - DATABASE_URL=postgres://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@vscode-database:5432/vscode-server-tool
       - SESSION_SECRET=${SESSION_SECRET:-my-secret}
+      - GITHUB_TOKEN_SECRET=${GITHUB_TOKEN_SECRET:-my-secret}
       - ADMIN_USER=${ADMIN_USER:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
       - ENABLE_GPU_PASSTHROUGH=${ENABLE_GPU_PASSTHROUGH:-false}

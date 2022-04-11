@@ -2,6 +2,7 @@ import { createCookieSessionStorage, redirect } from "remix";
 import bcrypt from "bcrypt";
 
 import { db } from "./prisma.server";
+import { encrypt } from "./encryption.server";
 
 type LoginForm = {
   username: string;
@@ -23,8 +24,9 @@ type UpdateForm = {
 
 export async function register({ username, password, token }: RegisterForm) {
   const passwordHash = await bcrypt.hash(password, 10);
+  const githubToken = encrypt(token);
   const user = await db.user.create({
-    data: { username, githubToken: token, passwordHash },
+    data: { username, githubToken, passwordHash },
   });
   return user;
 }
@@ -39,7 +41,7 @@ export async function update({
     where: { id: userId },
     data: {
       username: username ? username : undefined,
-      githubToken: token ? token : undefined,
+      githubToken: token ? encrypt(token) : undefined,
       passwordHash: password ? await bcrypt.hash(password, 10) : undefined,
     },
   });
