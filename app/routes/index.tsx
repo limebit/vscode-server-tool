@@ -1,12 +1,17 @@
 import * as React from "react";
 import {
+  Avatar,
   Box,
   Flex,
   Heading,
   Icon,
   IconButton,
   Input,
-  Link,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItem,
+  MenuList,
 } from "@chakra-ui/react";
 import type { Repository } from "@prisma/client";
 import {
@@ -14,20 +19,21 @@ import {
   json,
   LoaderFunction,
   useLoaderData,
-  Link as RemixLink,
   Form,
   useTransition,
+  Link as RemixLink,
 } from "remix";
-import { FaPlus } from "react-icons/fa";
+import { FaCog, FaPlus, FaSignOutAlt, FaUsersCog } from "react-icons/fa";
 import { createContainer, stopContainer } from "../utils/docker.server";
 import { deleteRepository, cloneRepository } from "../utils/git.server";
 import { db } from "../utils/prisma.server";
-import { requireUser, requireUserId } from "../utils/session.server";
+import { requireUser } from "../utils/session.server";
 import { RepositoryTable } from "../components/repositoryTable";
 
 type LoaderData = {
   repositories: Repository[];
   containerBaseUrl: string;
+  isAdmin: string;
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -128,14 +134,15 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
+  const user = await requireUser(request);
 
   return json({
     containerBaseUrl:
       process.env.NODE_ENV === "production"
         ? request.headers.get("host")
         : "localhost:3030",
-    repositories: await db.repository.findMany({ where: { userId } }),
+    repositories: await db.repository.findMany({ where: { user } }),
+    isAdmin: user.status === "admin",
   });
 };
 
@@ -145,17 +152,35 @@ export default function Index() {
 
   return (
     <Box display="grid" justifyContent="center">
-      <Link
-        position="absolute"
-        top="20px"
-        right="30px"
-        as={RemixLink}
-        to="/logout"
-        color="gray.500"
-        marginLeft="10px"
-      >
-        Logout
-      </Link>
+      <Box position="absolute" top="20px" right="30px">
+        <Menu>
+          <MenuButton>
+            <Avatar size="sm" />
+          </MenuButton>
+          <MenuList>
+            <MenuItem as={RemixLink} to="/settings" icon={<Icon as={FaCog} />}>
+              Settings
+            </MenuItem>
+            {data.isAdmin ? (
+              <MenuItem
+                as={RemixLink}
+                to="/admin"
+                icon={<Icon as={FaUsersCog} />}
+              >
+                Admin Panel
+              </MenuItem>
+            ) : null}
+            <MenuDivider />
+            <MenuItem
+              as={RemixLink}
+              to="/logout"
+              icon={<Icon as={FaSignOutAlt} />}
+            >
+              Logout
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      </Box>
       <Box width="1200px">
         <Box marginTop="30px" display="grid" justifyContent="center">
           <Heading>VS Code Server Tool</Heading>

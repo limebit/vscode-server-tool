@@ -36,6 +36,11 @@ model User {
   status                  UserStatus   @default(member)
 }
 
+model Meta {
+  key                     String       @id
+  value                   String
+}
+
 enum RunState {
   started
   stopped

@@ -1,7 +1,18 @@
 import { Box, Button, Flex, Heading, Input, Link } from "@chakra-ui/react";
 import * as React from "react";
-import { ActionFunction, Link as ReachLink, redirect } from "remix";
+import {
+  ActionFunction,
+  Link as ReachLink,
+  LoaderFunction,
+  redirect,
+  useLoaderData,
+} from "remix";
 import { createUserSession, login } from "../utils/session.server";
+import { db } from "~/utils/prisma.server";
+
+type LoaderData = {
+  enableRegister: boolean;
+} | null;
 
 export const action: ActionFunction = async ({ request }) => {
   const { username, password } = Object.fromEntries(await request.formData());
@@ -19,7 +30,17 @@ export const action: ActionFunction = async ({ request }) => {
   return createUserSession(user.id, "/");
 };
 
+export const loader: LoaderFunction = async () => {
+  const enableRegister = await db.meta.findFirst({
+    where: { key: "enable_register" },
+  });
+
+  return { enableRegister: enableRegister?.value == "true" };
+};
+
 export default function Login() {
+  const data = useLoaderData<LoaderData>();
+
   return (
     <Box display="grid" justifyContent="center">
       <Box width="1200px" display="grid" justifyContent="center">
@@ -46,11 +67,13 @@ export default function Login() {
             <Button marginTop="10px" type="submit">
               Login
             </Button>
-            <Link as={ReachLink} to="/register">
-              <Button marginTop="10px" width="100%">
-                I am a new User
-              </Button>
-            </Link>
+            {data?.enableRegister ? (
+              <Link as={ReachLink} to="/register">
+                <Button marginTop="10px" width="100%">
+                  I am a new User
+                </Button>
+              </Link>
+            ) : null}
           </Flex>
         </form>
       </Box>

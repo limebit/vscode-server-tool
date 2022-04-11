@@ -14,12 +14,36 @@ type RegisterForm = {
   token: string;
 };
 
+type UpdateForm = {
+  userId: string;
+  username: string;
+  password: string;
+  token: string;
+};
+
 export async function register({ username, password, token }: RegisterForm) {
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await db.user.create({
     data: { username, githubToken: token, passwordHash },
   });
   return user;
+}
+
+export async function update({
+  userId,
+  username,
+  password,
+  token,
+}: UpdateForm) {
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      username: username ? username : undefined,
+      githubToken: token ? token : undefined,
+      passwordHash: password ? await bcrypt.hash(password, 10) : undefined,
+    },
+  });
+  throw redirect("/logout");
 }
 
 export async function login({ username, password }: LoginForm) {

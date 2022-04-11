@@ -1,7 +1,8 @@
 import { Box, Button, Flex, Heading, Input } from "@chakra-ui/react";
 import * as React from "react";
-import type { ActionFunction } from "remix";
+import { ActionFunction, LoaderFunction, redirect } from "remix";
 import { createUserSession, register } from "../utils/session.server";
+import { db } from "~/utils/prisma.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const { username, token, password } = Object.fromEntries(
@@ -19,6 +20,18 @@ export const action: ActionFunction = async ({ request }) => {
   const user = await register({ username, token, password });
 
   return createUserSession(user.id, "/");
+};
+
+export const loader: LoaderFunction = async () => {
+  const enableRegister = await db.meta.findFirst({
+    where: { key: "enable_register" },
+  });
+
+  if (enableRegister?.value == "false") {
+    throw redirect("/login", 404);
+  }
+
+  return null;
 };
 
 export default function Register() {

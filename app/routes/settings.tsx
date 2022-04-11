@@ -1,20 +1,20 @@
 import * as React from "react";
 import { Box, Flex, Heading } from "@chakra-ui/react";
-import { LoaderFunction, Link as RemixLink, Outlet } from "remix";
-import { requireAdminId } from "../utils/session.server";
+import { LoaderFunction, Outlet, Link as RemixLink } from "remix";
+import { requireUserId } from "../utils/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireAdminId(request);
+  await requireUserId(request);
 
   return null;
 };
 
-export default function Index() {
+export default function Settings() {
   return (
     <Box display="grid" justifyContent="center">
       <Box width="1200px">
         <Box marginTop="30px" display="grid" justifyContent="center">
-          <Heading>Admin</Heading>
+          <Heading>Settings</Heading>
         </Box>
         <Flex marginTop="30px">
           <Box
@@ -26,6 +26,8 @@ export default function Index() {
             height="fit-content"
           >
             <Flex
+              borderBottom="1px"
+              borderColor="gray.200"
               justifyContent="space-between"
               alignItems="center"
               paddingY="10px"
@@ -33,7 +35,17 @@ export default function Index() {
               as={RemixLink}
               to="/settings/accountSettings"
             >
-              Global Settings
+              Account Settings
+            </Flex>
+            <Flex
+              justifyContent="space-between"
+              alignItems="center"
+              paddingY="10px"
+              paddingX="10px"
+              as={RemixLink}
+              to="/settings/repositorySettings"
+            >
+              Repository Settings
             </Flex>
           </Box>
           <Box width="75%">

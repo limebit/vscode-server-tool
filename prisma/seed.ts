@@ -19,6 +19,18 @@ async function seed() {
       username,
       passwordHash,
       githubToken: "",
+      status: "admin",
+    },
+  });
+
+  await prisma.meta.upsert({
+    where: {
+      key: "enable_register",
+    },
+    update: {},
+    create: {
+      key: "enable_register",
+      value: "true",
     },
   });
 }
