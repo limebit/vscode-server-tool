@@ -1,9 +1,10 @@
 {
   "recommendations": [
-    "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
     "editorconfig.editorconfig",
-    "eamodio.gitlens"
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss"
   ],
   "unwantedRecommendations": ["hookyqr.beautify", "dbaeumer.jshint"]
 }

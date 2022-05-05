@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Box, Flex, Heading } from "@chakra-ui/react";
-import { LoaderFunction, Link as RemixLink, Outlet } from "remix";
+import { LoaderFunction, Outlet, NavLink } from "remix";
 import { requireAdminId } from "../utils/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -25,16 +25,20 @@ export default function Index() {
             overflow="hidden"
             height="fit-content"
           >
-            <Flex
-              justifyContent="space-between"
-              alignItems="center"
-              paddingY="10px"
-              paddingX="10px"
-              as={RemixLink}
-              to="/settings/accountSettings"
-            >
-              Global Settings
-            </Flex>
+            <NavLink
+              to="/settings/globalSettings"
+              children={({ isActive }) => (
+                <Flex
+                  justifyContent="space-between"
+                  alignItems="center"
+                  paddingY="10px"
+                  paddingX="10px"
+                  backgroundColor={isActive ? "gray.50" : undefined}
+                >
+                  Global Settings
+                </Flex>
+              )}
+            />
           </Box>
           <Box width="75%">
             <Outlet />

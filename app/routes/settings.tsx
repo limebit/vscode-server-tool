@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Box, Flex, Heading } from "@chakra-ui/react";
-import { LoaderFunction, Outlet, Link as RemixLink } from "remix";
+import { LoaderFunction, Outlet, NavLink } from "remix";
 import { requireUserId } from "../utils/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -25,28 +25,34 @@ export default function Settings() {
             overflow="hidden"
             height="fit-content"
           >
-            <Flex
-              borderBottom="1px"
-              borderColor="gray.200"
-              justifyContent="space-between"
-              alignItems="center"
-              paddingY="10px"
-              paddingX="10px"
-              as={RemixLink}
+            <NavLink
               to="/settings/accountSettings"
-            >
-              Account Settings
-            </Flex>
-            <Flex
-              justifyContent="space-between"
-              alignItems="center"
-              paddingY="10px"
-              paddingX="10px"
-              as={RemixLink}
+              children={({ isActive }) => (
+                <Flex
+                  justifyContent="space-between"
+                  alignItems="center"
+                  paddingY="10px"
+                  paddingX="10px"
+                  backgroundColor={isActive ? "gray.50" : undefined}
+                >
+                  Account Settings
+                </Flex>
+              )}
+            />
+            <NavLink
               to="/settings/repositorySettings"
-            >
-              Repository Settings
-            </Flex>
+              children={({ isActive }) => (
+                <Flex
+                  justifyContent="space-between"
+                  alignItems="center"
+                  paddingY="10px"
+                  paddingX="10px"
+                  backgroundColor={isActive ? "gray.50" : undefined}
+                >
+                  Repository Settings
+                </Flex>
+              )}
+            />
           </Box>
           <Box width="75%">
             <Outlet />

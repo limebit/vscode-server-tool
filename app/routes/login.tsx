@@ -23,8 +23,12 @@ export const action: ActionFunction = async ({ request }) => {
 
   const user = await login({ username, password });
 
+  const enableRegister = await db.meta.findFirst({
+    where: { key: "enable_register" },
+  });
+
   if (!user) {
-    return redirect("/register");
+    return enableRegister?.value == "true" ? redirect("/register") : null;
   }
 
   return createUserSession(user.id, "/");

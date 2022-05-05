@@ -16,5 +16,8 @@
   "files.trimTrailingWhitespace": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }
