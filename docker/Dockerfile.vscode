@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.6.0-base-ubuntu20.04
+FROM nvidia/cuda:11.6.2-base-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -18,8 +18,13 @@ RUN \
   echo 'export PATH="$HOME/.pyenv/shims:$PATH"' >> ~/.zshrc && \
   echo 'eval "$(pyenv init -)"' >> ~/.zshrc && \
   echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.zshrc && \
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | zsh && \
+  echo 'export NVM_DIR="$HOME/.nvm"' && \
+  echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' && \
+  echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' && \
   exec zsh
-RUN apt install dirmngr gnupg apt-transport-https ca-certificates software-properties-common -y && \
+RUN \
+  apt install dirmngr gnupg apt-transport-https ca-certificates software-properties-common -y && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
   add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/' && \
   apt update && \
