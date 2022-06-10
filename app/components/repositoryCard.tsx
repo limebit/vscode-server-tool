@@ -9,12 +9,14 @@ import { RepositorySettings } from "./repositorySettings";
 interface RepositoryCardProps {
   repository: Repository;
   containerBaseUrl: string;
+  gitUserBasePath: string;
   last?: boolean;
 }
 
 export const RepositoryCard = ({
   repository,
   containerBaseUrl,
+  gitUserBasePath,
   last,
 }: RepositoryCardProps) => {
   const [open, setOpen] = useState(false);
@@ -111,6 +113,7 @@ export const RepositoryCard = ({
         </Flex>
         <RepositorySettings
           repository={repository}
+          gitUserBasePath={gitUserBasePath}
           open={open}
           last={last}
           link={link}

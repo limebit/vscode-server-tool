@@ -49,6 +49,7 @@ export const createContainer = async (
     HostConfig: {
       AutoRemove: true,
       Binds: [
+        ...repository.volumes,
         `${process.env.GIT_FOLDER_MOUNT ?? gitFolder}/${user.id}/${
           repository.repositoryName
         }:/root/${repository.repositoryName}`,

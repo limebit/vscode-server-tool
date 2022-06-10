@@ -24,6 +24,7 @@ model Repository {
   runState       RunState @default(stopped)
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  volumes        String[]
   containerId    String?
 }
 

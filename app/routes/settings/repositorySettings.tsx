@@ -28,8 +28,6 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const extension = formData.get("extension");
 
-  console.log(formData);
-
   switch (formData.get("action")) {
     case "create":
       await db.user.update({

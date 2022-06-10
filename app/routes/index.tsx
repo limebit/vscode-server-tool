@@ -25,7 +25,11 @@ import {
 } from "remix";
 import { FaCog, FaPlus, FaSignOutAlt, FaUsersCog } from "react-icons/fa";
 import { createContainer, stopContainer } from "../utils/docker.server";
-import { deleteRepository, cloneRepository } from "../utils/git.server";
+import {
+  deleteRepository,
+  cloneRepository,
+  gitFolder,
+} from "../utils/git.server";
 import { db } from "../utils/prisma.server";
 import { requireUser } from "../utils/session.server";
 import { RepositoryTable } from "../components/repositoryTable";
@@ -34,6 +38,7 @@ type LoaderData = {
   repositories: Repository[];
   containerBaseUrl: string;
   isAdmin: string;
+  gitUserBasePath: string;
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -127,6 +132,44 @@ export const action: ActionFunction = async ({ request }) => {
 
       break;
     }
+    case "createVolume": {
+      const repository = await db.repository.findFirst({
+        where: { userId: user.id, repositoryName },
+      });
+
+      const volume = formData.get("volume");
+
+      if (!repository || !volume) {
+        break;
+      }
+
+      await db.repository.update({
+        where: { id: repository.id },
+        data: { volumes: [...repository.volumes, volume as string] },
+      });
+
+      break;
+    }
+    case "deleteVolume": {
+      const repository = await db.repository.findFirst({
+        where: { userId: user.id, repositoryName },
+      });
+
+      const volume = formData.get("volume");
+
+      if (!repository || !volume) {
+        break;
+      }
+
+      await db.repository.update({
+        where: { id: repository.id },
+        data: {
+          volumes: repository.volumes.filter((element) => element != volume),
+        },
+      });
+
+      break;
+    }
     default:
       return null;
   }
@@ -143,6 +186,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         : "localhost:3030",
     repositories: await db.repository.findMany({ where: { userId: user.id } }),
     isAdmin: user.status === "admin",
+    gitUserBasePath: `${process.env.GIT_FOLDER_MOUNT ?? gitFolder}/${user.id}/`,
   });
 };
 
@@ -213,6 +257,7 @@ export default function Index() {
         <RepositoryTable
           repositories={data.repositories}
           containerBaseUrl={data.containerBaseUrl}
+          gitUserBasePath={data.gitUserBasePath}
         />
       </Box>
     </Box>

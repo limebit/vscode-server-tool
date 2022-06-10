@@ -6,11 +6,13 @@ import { RepositoryCard } from "../components/repositoryCard";
 interface RepositoryTableProps {
   repositories: Repository[];
   containerBaseUrl: string;
+  gitUserBasePath: string;
 }
 
 export const RepositoryTable = ({
   repositories,
   containerBaseUrl,
+  gitUserBasePath,
 }: RepositoryTableProps) => {
   return repositories.length > 0 ? (
     <Box
@@ -25,6 +27,7 @@ export const RepositoryTable = ({
           key={i}
           containerBaseUrl={containerBaseUrl}
           last={i == repositories.length - 1}
+          gitUserBasePath={gitUserBasePath}
         />
       ))}
     </Box>
