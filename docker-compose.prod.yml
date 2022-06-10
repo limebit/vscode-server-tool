@@ -3,6 +3,7 @@ services:
   database:
     container_name: vscode-database
     image: postgres:latest
+    restart: always
     ports:
       - "5432:5432"
     healthcheck:
@@ -21,6 +22,7 @@ services:
     tty: true
   frontend:
     build: .
+    restart: always
     depends_on:
       database:
         condition: service_healthy
@@ -53,6 +55,7 @@ services:
       # - "traefik.http.routers.frontend.tls: true"
   traefik:
     image: traefik:v2.6
+    restart: always
     ports:
       - "80:80"
       # Uncomment if you want to enable tls
