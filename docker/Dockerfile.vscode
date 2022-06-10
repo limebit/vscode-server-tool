@@ -42,6 +42,9 @@ RUN \
   apt update && \
   apt install r-base -y
 
+COPY ./custom_certificates /usr/local/share/ca-certificates/
+
+RUN update-ca-certificates
 
 COPY ./config.yaml /root/.config/code-server/config.yaml
 

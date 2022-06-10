@@ -16,3 +16,5 @@ cdk.out
 /app/styles
 data
 dev-data
+
+*.gitkeep
