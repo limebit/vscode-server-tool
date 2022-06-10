@@ -17,7 +17,9 @@ const cloneRepository = async (repository: string, user: User) => {
   await git.clone(
     repository.replace(
       "github.com",
-      `${user.username}:${decrypt(user.githubToken)}@github.com`
+      `${user.username}:${
+        user.githubToken ? decrypt(user.githubToken) : ""
+      }@github.com`
     )
   );
 };

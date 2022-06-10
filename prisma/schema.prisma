@@ -33,6 +33,7 @@ model User {
   passwordHash String
   repositories Repository[]
   githubToken  String
+  extensions   String[]
   status       UserStatus   @default(member)
 }
 

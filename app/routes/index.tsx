@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
   switch (formData.get("action")) {
     case "start": {
       const repository = await db.repository.findFirst({
-        where: { user, repositoryName },
+        where: { userId: user.id, repositoryName },
       });
       if (!repository) {
         break;
@@ -70,7 +70,7 @@ export const action: ActionFunction = async ({ request }) => {
     }
     case "stop": {
       const repository = await db.repository.findFirst({
-        where: { user, repositoryName },
+        where: { userId: user.id, repositoryName },
       });
       if (
         !repository ||
@@ -97,7 +97,7 @@ export const action: ActionFunction = async ({ request }) => {
       const repositoryNameCleaned = repositoryMatch[0];
 
       const repository = await db.repository.findFirst({
-        where: { user, repositoryName: repositoryNameCleaned },
+        where: { userId: user.id, repositoryName: repositoryNameCleaned },
       });
 
       if (repository != null || !repositoryNameCleaned) {
@@ -114,7 +114,7 @@ export const action: ActionFunction = async ({ request }) => {
     }
     case "delete": {
       const repository = await db.repository.findFirst({
-        where: { user, repositoryName },
+        where: { userId: user.id, repositoryName },
       });
 
       if (repository?.containerId) {
@@ -141,7 +141,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       process.env.NODE_ENV === "production"
         ? request.headers.get("host")
         : "localhost:3030",
-    repositories: await db.repository.findMany({ where: { user } }),
+    repositories: await db.repository.findMany({ where: { userId: user.id } }),
     isAdmin: user.status === "admin",
   });
 };
