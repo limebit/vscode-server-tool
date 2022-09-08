@@ -14,14 +14,16 @@ const cloneRepository = async (repository: string, user: User) => {
     baseDir: userPath,
   });
 
-  await git.clone(
-    repository.replace(
-      "github.com",
-      `${user.username}:${
-        user.githubToken ? decrypt(user.githubToken) : ""
-      }@github.com`
-    )
-  );
+  await git
+    .env("GIT_LFS_SKIP_SMUDGE", "1")
+    .clone(
+      repository.replace(
+        "github.com",
+        `${user.username}:${
+          user.githubToken ? decrypt(user.githubToken) : ""
+        }@github.com`
+      )
+    );
 };
 
 const deleteRepository = async (repository: string, userId: string) => {

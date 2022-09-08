@@ -1,2 +1,5 @@
 custom_certificates/*
 !custom_certificates/.gitkeep
+
+.ssh/*
+!.ssh/.gitkeep
