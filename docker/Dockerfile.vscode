@@ -36,6 +36,7 @@ RUN \
   pyenv install 3.9.13 && \
   pyenv global 3.9.13 && \
   npm install --global yarn && \
+  apt update && \
   apt install dirmngr gnupg apt-transport-https ca-certificates software-properties-common vim -y
 
 COPY ./custom_certificates /usr/local/share/ca-certificates/
